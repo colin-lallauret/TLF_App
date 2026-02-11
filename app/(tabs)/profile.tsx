@@ -1,19 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 export default function ProfileScreen() {
+    const { user, profile, signOut } = useAuth();
+    const router = useRouter();
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+    const handleLogout = () => {
+        setShowLogoutDialog(true);
+    };
+
+    const confirmLogout = async () => {
+        setShowLogoutDialog(false);
+        await signOut();
+        router.replace('/auth');
+    };
+
+    const cancelLogout = () => {
+        setShowLogoutDialog(false);
+    };
+
+    const isPremium = profile?.subscription_end_date &&
+        new Date(profile.subscription_end_date) > new Date();
+
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarText}>👤</Text>
+                    <Text style={styles.avatarText}>
+                        {profile?.full_name?.charAt(0).toUpperCase() || '👤'}
+                    </Text>
                 </View>
-                <Text style={styles.userName}>Nom d'utilisateur</Text>
-                <Text style={styles.userBio}>Voyageur passionné</Text>
-                <View style={styles.badgeContainer}>
-                    <Text style={styles.badge}>TLF+</Text>
-                </View>
+                <Text style={styles.userName}>
+                    {profile?.full_name || 'Utilisateur'}
+                </Text>
+                <Text style={styles.userBio}>
+                    {profile?.bio || (profile?.is_contributor ? 'Contributeur local' : 'Voyageur passionné')}
+                </Text>
+                {profile?.city && (
+                    <Text style={styles.userCity}>📍 {profile.city}</Text>
+                )}
+                {isPremium && (
+                    <View style={styles.badgeContainer}>
+                        <Text style={styles.badge}>TLF+</Text>
+                    </View>
+                )}
             </View>
 
             <View style={styles.content}>
@@ -32,9 +67,30 @@ export default function ProfileScreen() {
                     </View>
                 </View>
 
-                <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+ Ajouter un souvenir</Text>
-                </TouchableOpacity>
+                {!profile?.is_contributor && (
+                    <TouchableOpacity style={styles.addButton}>
+                        <Text style={styles.addButtonText}>+ Ajouter un souvenir</Text>
+                    </TouchableOpacity>
+                )}
+
+                <View style={styles.infoSection}>
+                    <Text style={styles.infoLabel}>Email</Text>
+                    <Text style={styles.infoValue}>{user?.email}</Text>
+                </View>
+
+                {profile?.username && (
+                    <View style={styles.infoSection}>
+                        <Text style={styles.infoLabel}>Nom d'utilisateur</Text>
+                        <Text style={styles.infoValue}>@{profile.username}</Text>
+                    </View>
+                )}
+
+                <View style={styles.infoSection}>
+                    <Text style={styles.infoLabel}>Type de compte</Text>
+                    <Text style={styles.infoValue}>
+                        {profile?.is_contributor ? '🏆 Contributeur Local' : '✈️ Voyageur'}
+                    </Text>
+                </View>
 
                 <Text style={styles.sectionTitle}>Mes souvenirs</Text>
                 <View style={styles.placeholder}>
@@ -45,7 +101,21 @@ export default function ProfileScreen() {
                         Photos, notes et carnets de voyage
                     </Text>
                 </View>
+
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+                </TouchableOpacity>
             </View>
+
+            <ConfirmDialog
+                visible={showLogoutDialog}
+                title="Déconnexion"
+                message="Êtes-vous sûr de vouloir vous déconnecter ?"
+                confirmText="Déconnexion"
+                cancelText="Annuler"
+                onConfirm={confirmLogout}
+                onCancel={cancelLogout}
+            />
         </ScrollView>
     );
 }
@@ -73,6 +143,8 @@ const styles = StyleSheet.create({
     },
     avatarText: {
         fontSize: 50,
+        fontWeight: 'bold',
+        color: Colors.light.primary,
     },
     userName: {
         fontSize: 24,
@@ -84,6 +156,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#FFFFFF',
         opacity: 0.9,
+        textAlign: 'center',
+        paddingHorizontal: 20,
+    },
+    userCity: {
+        fontSize: 14,
+        color: '#FFFFFF',
+        opacity: 0.9,
+        marginTop: 5,
     },
     badgeContainer: {
         marginTop: 10,
@@ -133,6 +213,23 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    infoSection: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 15,
+        padding: 16,
+        marginBottom: 12,
+    },
+    infoLabel: {
+        fontSize: 12,
+        color: Colors.light.icon,
+        marginBottom: 4,
+        fontWeight: '600',
+    },
+    infoValue: {
+        fontSize: 16,
+        color: Colors.light.text,
+        fontWeight: '500',
+    },
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -146,10 +243,25 @@ const styles = StyleSheet.create({
         padding: 60,
         alignItems: 'center',
         justifyContent: 'center',
+        marginBottom: 20,
     },
     placeholderText: {
         color: Colors.light.icon,
         fontSize: 14,
         textAlign: 'center',
+    },
+    logoutButton: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 15,
+        padding: 16,
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#FF4444',
+        marginTop: 10,
+    },
+    logoutButtonText: {
+        color: '#FF4444',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
