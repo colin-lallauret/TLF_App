@@ -1,4 +1,5 @@
 import { ReviewCard } from '@/components/ReviewCard';
+import { RestaurantMap } from '@/components/RestaurantMap';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useRestaurantDetails } from '@/hooks/useRestaurantDetails';
@@ -73,6 +74,14 @@ export default function RestaurantDetailsScreen() {
                             </View>
                         </View>
                     </View>
+
+                    {/* Map Section */}
+                    {restaurant.lat && restaurant.lng && (
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Localisation</Text>
+                            <RestaurantMap restaurants={[restaurant]} />
+                        </View>
+                    )}
 
                     {/* Reviews Section */}
                     <View style={styles.reviewsSection}>

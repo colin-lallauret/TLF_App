@@ -1,10 +1,32 @@
 import { FeaturedContributors } from '@/components/FeaturedContributors';
 import { FeaturedRestaurants } from '@/components/FeaturedRestaurants';
 import { Colors } from '@/constants/theme';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { supabase } from '@/lib/supabase';
+import { RestaurantMap } from '@/components/RestaurantMap';
 
 export default function ExplorerScreen() {
+    const [mapRestaurants, setMapRestaurants] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchRestaurants = async () => {
+            try {
+                const { data } = await supabase
+                    .from('restaurants')
+                    .select('id, name, lat, lng, city, food_types')
+                    .not('lat', 'is', null)
+                    .not('lng', 'is', null)
+                    .limit(50);
+
+                if (data) setMapRestaurants(data);
+            } catch (error) {
+                console.error('Error fetching map restaurants:', error);
+            }
+        };
+        fetchRestaurants();
+    }, []);
+
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
@@ -20,11 +42,17 @@ export default function ExplorerScreen() {
                 <FeaturedRestaurants />
 
                 <Text style={styles.sectionTitle}>Carte interactive</Text>
-                <View style={[styles.placeholder, styles.mapPlaceholder]}>
-                    <Text style={styles.placeholderText}>
-                        Carte avec marqueurs personnalisés
-                    </Text>
-                </View>
+                {mapRestaurants.length > 0 ? (
+                    <View style={styles.mapContainer}>
+                        <RestaurantMap restaurants={mapRestaurants} />
+                    </View>
+                ) : (
+                    <View style={[styles.placeholder, styles.mapPlaceholder]}>
+                        <Text style={styles.placeholderText}>
+                            Chargement de la carte...
+                        </Text>
+                    </View>
+                )}
             </View>
         </ScrollView>
     );
@@ -80,5 +108,10 @@ const styles = StyleSheet.create({
         color: Colors.light.icon,
         fontSize: 14,
         textAlign: 'center',
+    },
+    mapContainer: {
+        height: 350,
+        marginHorizontal: 20,
+        marginBottom: 20,
     },
 });
