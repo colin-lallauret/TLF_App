@@ -1,21 +1,29 @@
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Database } from '@/types/database.types';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface ContributorCardProps {
     contributor: Profile;
+    isFavorite?: boolean;
+    onToggleFavorite?: (id: string) => void;
 }
 
 /**
  * Composant carte pour afficher un contributeur local
  * Affiche l'avatar, le nom, la ville et la bio du contributeur
  */
-export function ContributorCard({ contributor }: ContributorCardProps) {
+export function ContributorCard({ contributor, isFavorite: initialIsFavorite = false, onToggleFavorite }: ContributorCardProps) {
     const router = useRouter();
+    const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+
+    useEffect(() => {
+        setIsFavorite(initialIsFavorite);
+    }, [initialIsFavorite]);
 
     // Fonction pour obtenir les initiales du nom
     const getInitials = (name: string | null): string => {
@@ -38,6 +46,14 @@ export function ContributorCard({ contributor }: ContributorCardProps) {
         router.push(`/contributor/${contributor.id}`);
     };
 
+    const handleFavoritePress = (e: any) => {
+        e.stopPropagation();
+        setIsFavorite(!isFavorite);
+        if (onToggleFavorite) {
+            onToggleFavorite(contributor.id);
+        }
+    };
+
     return (
         <Pressable
             style={({ pressed }) => [
@@ -46,6 +62,22 @@ export function ContributorCard({ contributor }: ContributorCardProps) {
             ]}
             onPress={handlePress}
         >
+            {onToggleFavorite && (
+                <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={handleFavoritePress}
+                    activeOpacity={0.7}
+                >
+                    <View style={styles.favoriteIconBackground}>
+                        <IconSymbol
+                            name={isFavorite ? "heart.fill" : "heart"}
+                            size={14}
+                            color={isFavorite ? "#E65127" : "#666666"}
+                        />
+                    </View>
+                </TouchableOpacity>
+            )}
+
             {/* Avatar */}
             <View style={styles.avatarContainer}>
                 {contributor.avatar_url ? (
@@ -98,14 +130,35 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+        position: 'relative',
     },
     cardPressed: {
         opacity: 0.8,
         transform: [{ scale: 0.98 }],
     },
+    favoriteButton: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        zIndex: 10,
+    },
+    favoriteIconBackground: {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 15,
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
     avatarContainer: {
         alignItems: 'center',
         marginBottom: 8,
+        marginTop: 4,
     },
     avatar: {
         width: 80,

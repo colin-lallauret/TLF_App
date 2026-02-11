@@ -54,7 +54,7 @@ export function useContributorProfile(contributorId: string | null) {
                 .eq('id', contributorId)
                 .single();
 
-            if (profileError) throw profileError;
+            if (profileError || !profileData) throw profileError || new Error('Profil introuvable');
 
             // 2. Récupérer les stats (Nombre d'avis)
             const { count: reviewsCount, error: reviewsError } = await supabase
@@ -65,45 +65,54 @@ export function useContributorProfile(contributorId: string | null) {
             if (reviewsError) throw reviewsError;
 
             // 3. Récupérer les stats (Nombre de likes / followers)
-            // On utilise la table favorite_contributors si elle existe et est utilisée
             const { count: followersCount, error: followersError } = await supabase
                 .from('favorite_contributors')
                 .select('*', { count: 'exact', head: true })
                 .eq('contributor_id', contributorId);
 
-            // Pas d'erreur fatale si ça échoue (table peut-être vide ou non utilisée)
-
-            // 4. Récupérer les Tops Adresses (Restaurants notés >= 4 par ce contributeur)
+            // 4. Récupérer TOUS les restaurants notés par ce contributeur
             const { data: topReviews, error: topReviewsError } = await supabase
                 .from('reviews')
                 .select(`
                     rating,
                     restaurant:restaurants (*)
                 `)
-                .eq('contributor_id', contributorId)
-                .gte('rating', 4)
-                .limit(5);
+                .eq('contributor_id', contributorId);
 
             if (topReviewsError) throw topReviewsError;
 
-            // Formater les restaurants pour correspondre à RestaurantWithRating
-            const topRestaurants: RestaurantWithRating[] = topReviews
-                .filter((review: any) => review.restaurant) // S'assurer que le restaurant existe
-                .map((review: any) => {
-                    const restaurant = review.restaurant as RestaurantWithRating; // Assertion simple pour éviter l'erreur de spread
-                    return {
-                        ...restaurant,
-                        average_rating: review.rating, // Ici on affiche la note donnée par ce contributeur
-                        review_count: 1, // Contexte individuel
-                        image_url: getImageForCuisine(restaurant.food_types)
-                    };
-                });
+            // 5. Calculer les stats globales pour chaque restaurant
+            const topRestaurants: RestaurantWithRating[] = await Promise.all(
+                topReviews
+                    .filter((review: any) => review.restaurant)
+                    .map(async (review: any) => {
+                        const restaurant = review.restaurant;
+
+                        // Récupérer tous les avis pour ce restaurant pour calculer la moyenne globale
+                        const { data: restaurantReviews } = await supabase
+                            .from('reviews')
+                            .select('rating')
+                            .eq('restaurant_id', restaurant.id);
+
+                        const reviews = (restaurantReviews || []) as { rating: number | null }[];
+                        const count = reviews.length;
+                        const total = reviews.reduce((sum, r) => sum + (r.rating || 0), 0);
+                        const average = count > 0 ? Number((total / count).toFixed(1)) : 0;
+
+                        return {
+                            ...restaurant,
+                            average_rating: average, // Moyenne globale
+                            review_count: count,     // Nombre total d'avis
+                            image_url: getImageForCuisine(restaurant.food_types)
+                        } as RestaurantWithRating;
+                    })
+            );
 
             setProfile({
-                ...profileData,
+                ...(profileData as Profile),
                 stats: {
                     reviews_count: reviewsCount || 0,
-                    likes_count: 0, // Pas de colonne likes sur profile, on pourrait utiliser followers
+                    likes_count: 0,
                     followers_count: followersCount || 0
                 },
                 top_restaurants: topRestaurants

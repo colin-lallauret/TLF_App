@@ -1,4 +1,5 @@
 import { useContributors } from '@/hooks/useContributors';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ContributorCard } from './ContributorCard';
@@ -8,7 +9,8 @@ import { ContributorCard } from './ContributorCard';
  * Affiche une liste horizontale scrollable des contributeurs locaux
  */
 export function FeaturedContributors() {
-    const { contributors, loading, error } = useContributors(10);
+    const { contributors, loading, error } = useContributors(100);
+    const { favoriteContributorIds, toggleContributorFavorite } = useFavoriteIds();
 
     if (loading) {
         return (
@@ -69,6 +71,8 @@ export function FeaturedContributors() {
                     <ContributorCard
                         key={contributor.id}
                         contributor={contributor}
+                        isFavorite={favoriteContributorIds.includes(contributor.id)}
+                        onToggleFavorite={toggleContributorFavorite}
                     />
                 ))}
             </ScrollView>

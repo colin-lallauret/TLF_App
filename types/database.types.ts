@@ -102,11 +102,27 @@ export interface Database {
                     user_id: string;
                     restaurant_id: string;
                 };
+                Insert: {
+                    user_id: string;
+                    restaurant_id: string;
+                };
+                Update: {
+                    user_id?: string;
+                    restaurant_id?: string;
+                };
             };
             favorite_contributors: {
                 Row: {
                     follower_id: string;
                     contributor_id: string;
+                };
+                Insert: {
+                    follower_id: string;
+                    contributor_id: string;
+                };
+                Update: {
+                    follower_id?: string;
+                    contributor_id?: string;
                 };
             };
         };

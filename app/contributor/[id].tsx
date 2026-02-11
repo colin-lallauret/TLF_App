@@ -7,10 +7,13 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
+
 export default function ContributorProfileScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { profile, loading, error } = useContributorProfile(id as string);
+    const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
 
     if (loading) {
         return (
@@ -103,7 +106,12 @@ export default function ContributorProfileScreen() {
                             style={styles.horizontalScroll}
                         >
                             {profile.top_restaurants.map((restaurant) => (
-                                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+                                <RestaurantCard
+                                    key={restaurant.id}
+                                    restaurant={restaurant}
+                                    isFavorite={favoriteRestaurantIds.includes(restaurant.id)}
+                                    onToggleFavorite={toggleRestaurantFavorite}
+                                />
                             ))}
                         </ScrollView>
                     ) : (

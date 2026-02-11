@@ -82,7 +82,13 @@ export default function RestaurantDetailsScreen() {
 
                         {restaurant.reviews && restaurant.reviews.length > 0 ? (
                             restaurant.reviews.map((review) => (
-                                <ReviewCard key={review.id} review={review} />
+                                <Pressable
+                                    key={review.id}
+                                    onPress={() => router.push(`/contributor/${review.contributor.id}` as any)}
+                                    style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                                >
+                                    <ReviewCard review={review} />
+                                </Pressable>
                             ))
                         ) : (
                             <View style={styles.emptyReviews}>

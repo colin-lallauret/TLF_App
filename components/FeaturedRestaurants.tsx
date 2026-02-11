@@ -1,11 +1,14 @@
 import { Colors } from '@/constants/theme';
 import { useRestaurants } from '@/hooks/useRestaurants';
-import React from 'react';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
+import React, { useCallback } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RestaurantCard } from './RestaurantCard';
+import { useFocusEffect } from 'expo-router';
 
 export function FeaturedRestaurants() {
-    const { restaurants, loading, error } = useRestaurants(5);
+    const { restaurants, loading, error } = useRestaurants(100);
+    const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
 
     if (loading) {
         return (
@@ -51,6 +54,8 @@ export function FeaturedRestaurants() {
                     <RestaurantCard
                         key={restaurant.id}
                         restaurant={restaurant}
+                        isFavorite={favoriteRestaurantIds.includes(restaurant.id)}
+                        onToggleFavorite={toggleRestaurantFavorite}
                     />
                 ))}
             </ScrollView>
