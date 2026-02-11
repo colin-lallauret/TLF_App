@@ -1,6 +1,7 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { FeaturedContributors } from '@/components/FeaturedContributors';
 import { Colors } from '@/constants/theme';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function ExplorerScreen() {
     return (
@@ -11,12 +12,8 @@ export default function ExplorerScreen() {
             </View>
 
             <View style={styles.content}>
-                <Text style={styles.sectionTitle}>Locaux à la une</Text>
-                <View style={styles.placeholder}>
-                    <Text style={styles.placeholderText}>
-                        Liste horizontale des contributeurs locaux
-                    </Text>
-                </View>
+                {/* Section Locaux à la Une */}
+                <FeaturedContributors />
 
                 <Text style={styles.sectionTitle}>Adresses populaires</Text>
                 <View style={styles.placeholder}>
@@ -58,7 +55,7 @@ const styles = StyleSheet.create({
         opacity: 0.9,
     },
     content: {
-        padding: 20,
+        paddingBottom: 20,
     },
     sectionTitle: {
         fontSize: 20,
@@ -66,6 +63,7 @@ const styles = StyleSheet.create({
         color: Colors.light.text,
         marginTop: 20,
         marginBottom: 12,
+        paddingHorizontal: 20,
     },
     placeholder: {
         backgroundColor: '#FFFFFF',
@@ -76,6 +74,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: Colors.light.primary,
         borderStyle: 'dashed',
+        marginHorizontal: 20,
     },
     mapPlaceholder: {
         height: 300,
