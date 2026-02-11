@@ -1,6 +1,7 @@
 import { FeaturedContributors } from '@/components/FeaturedContributors';
 import { FeaturedRestaurants } from '@/components/FeaturedRestaurants';
 import { RestaurantMap } from '@/components/RestaurantMap';
+import { SearchBar } from '@/components/SearchBar';
 import { Colors, Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import React, { useEffect, useState } from 'react';
@@ -28,10 +29,13 @@ export default function ExplorerScreen() {
     }, []);
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
             <View style={styles.header}>
                 <Text style={styles.title}>Explorer</Text>
                 <Text style={styles.subtitle}>Découvrez les adresses locales</Text>
+                <View style={styles.searchContainer}>
+                    <SearchBar />
+                </View>
             </View>
 
             <View style={styles.content}>
@@ -63,10 +67,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: Colors.light.beige,
     },
+    scrollContent: {
+        flexGrow: 1,
+    },
     header: {
         padding: 20,
         paddingTop: 60,
         backgroundColor: Colors.light.primary,
+        zIndex: 10, // Ensure search dropdown is visible over content
+        paddingBottom: 30, // Extra padding for search bar spacing
     },
     title: {
         fontSize: 32,
@@ -80,8 +89,12 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         opacity: 0.9,
     },
+    searchContainer: {
+        marginTop: 20,
+    },
     content: {
         paddingBottom: 20,
+        zIndex: 1,
     },
     sectionTitle: {
         fontSize: 20,
