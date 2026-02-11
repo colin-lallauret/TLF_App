@@ -1,62 +1,43 @@
+import { Fonts } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
+    ActivityIndicator,
+    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    ActivityIndicator,
-    Alert,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Colors } from '@/constants/theme';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function AuthScreen() {
-    const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [fullName, setFullName] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { signIn, signUp } = useAuth();
+    const { signIn } = useAuth();
     const router = useRouter();
 
-    const handleAuth = async () => {
+    const handleLogin = async () => {
         if (!email || !password) {
             Alert.alert('Erreur', 'Veuillez remplir tous les champs');
-            return;
-        }
-
-        if (!isLogin && !fullName) {
-            Alert.alert('Erreur', 'Veuillez entrer votre nom complet');
             return;
         }
 
         setLoading(true);
 
         try {
-            if (isLogin) {
-                const { data, error } = await signIn(email, password);
-                if (error) {
-                    Alert.alert('Erreur de connexion', error.message);
-                } else {
-                    router.replace('/(tabs)/explorer');
-                }
+            const { error } = await signIn(email, password);
+            if (error) {
+                Alert.alert('Erreur de connexion', error.message);
             } else {
-                const { data, error } = await signUp(email, password, fullName);
-                if (error) {
-                    Alert.alert('Erreur d\'inscription', error.message);
-                } else {
-                    Alert.alert(
-                        'Inscription réussie',
-                        'Vérifiez votre email pour confirmer votre compte',
-                        [{ text: 'OK', onPress: () => setIsLogin(true) }]
-                    );
-                }
+                router.replace('/(tabs)/explorer');
             }
         } catch (error) {
             Alert.alert('Erreur', 'Une erreur est survenue');
@@ -70,51 +51,30 @@ export default function AuthScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
+
+                {/* Header Logo + Slogan */}
                 <View style={styles.header}>
-                    <Text style={styles.logo}>🍽️</Text>
-                    <Text style={styles.title}>TravelLocalFood</Text>
-                    <Text style={styles.subtitle}>
-                        Découvrez les meilleures adresses locales
-                    </Text>
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('@/assets/icons/logo_tlf.svg')}
+                            style={styles.logo}
+                            contentFit="contain"
+                        />
+                        <View style={styles.titleContainer}>
+                            <Text style={styles.brandName}>Manger</Text>
+                            <Text style={styles.brandName}>avec simplicité</Text>
+                        </View>
+                    </View>
                 </View>
 
+                <Text style={styles.pageTitle}>Connexion</Text>
+
                 <View style={styles.formContainer}>
-                    <View style={styles.tabContainer}>
-                        <TouchableOpacity
-                            style={[styles.tab, isLogin && styles.tabActive]}
-                            onPress={() => setIsLogin(true)}>
-                            <Text style={[styles.tabText, isLogin && styles.tabTextActive]}>
-                                Connexion
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.tab, !isLogin && styles.tabActive]}
-                            onPress={() => setIsLogin(false)}>
-                            <Text style={[styles.tabText, !isLogin && styles.tabTextActive]}>
-                                Inscription
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {!isLogin && (
-                        <View style={styles.inputContainer}>
-                            <Text style={styles.label}>Nom complet</Text>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Margot Fernandez"
-                                placeholderTextColor="#999"
-                                value={fullName}
-                                onChangeText={setFullName}
-                                autoCapitalize="words"
-                            />
-                        </View>
-                    )}
-
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Email</Text>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Adresse e-mail</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="votre@email.com"
+                            placeholder=""
                             placeholderTextColor="#999"
                             value={email}
                             onChangeText={setEmail}
@@ -123,44 +83,33 @@ export default function AuthScreen() {
                         />
                     </View>
 
-                    <View style={styles.inputContainer}>
+                    <View style={styles.inputGroup}>
                         <Text style={styles.label}>Mot de passe</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="••••••••"
+                            placeholder=""
                             placeholderTextColor="#999"
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry
                         />
+                        <TouchableOpacity style={styles.forgotPassword}>
+                            <Text style={styles.forgotPasswordText}>
+                                Mot de passe perdu ?
+                            </Text>
+                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity
-                        style={[styles.button, loading && styles.buttonDisabled]}
-                        onPress={handleAuth}
+                        style={[styles.loginButton, loading && styles.buttonDisabled]}
+                        onPress={handleLogin}
                         disabled={loading}>
                         {loading ? (
                             <ActivityIndicator color="#FFFFFF" />
                         ) : (
-                            <Text style={styles.buttonText}>
-                                {isLogin ? 'Se connecter' : 'S\'inscrire'}
-                            </Text>
+                            <Text style={styles.loginButtonText}>Se connecter</Text>
                         )}
                     </TouchableOpacity>
-
-                    {isLogin && (
-                        <TouchableOpacity style={styles.forgotPassword}>
-                            <Text style={styles.forgotPasswordText}>
-                                Mot de passe oublié ?
-                            </Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
-
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>
-                        En continuant, vous acceptez nos conditions d'utilisation
-                    </Text>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -170,115 +119,86 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.light.beige,
+        backgroundColor: '#FFFCF5', // Cream/Beige background from design system/mockup
     },
     scrollContent: {
         flexGrow: 1,
-        justifyContent: 'center',
-        padding: 20,
+        padding: 24,
+        paddingTop: 80,
     },
     header: {
+        flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 40,
     },
+    logoContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     logo: {
-        fontSize: 60,
-        marginBottom: 10,
+        width: 60,
+        height: 60,
+        marginRight: 16,
     },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: Colors.light.primary,
-        marginBottom: 8,
+    titleContainer: {
+        justifyContent: 'center',
     },
-    subtitle: {
-        fontSize: 16,
-        color: Colors.light.icon,
-        textAlign: 'center',
+    brandName: {
+        fontFamily: Fonts.bold,
+        fontSize: 24,
+        color: '#141414',
+        lineHeight: 28,
+    },
+    pageTitle: {
+        fontFamily: Fonts.medium,
+        fontSize: 20,
+        color: '#141414',
+        marginBottom: 30,
     },
     formContainer: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 24,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        gap: 20,
     },
-    tabContainer: {
-        flexDirection: 'row',
-        backgroundColor: Colors.light.beige,
-        borderRadius: 15,
-        padding: 4,
-        marginBottom: 24,
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        borderRadius: 12,
-    },
-    tabActive: {
-        backgroundColor: '#FFFFFF',
-    },
-    tabText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: Colors.light.icon,
-    },
-    tabTextActive: {
-        color: Colors.light.primary,
-    },
-    inputContainer: {
-        marginBottom: 16,
+    inputGroup: {
+        marginBottom: 5,
     },
     label: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: Colors.light.text,
+        fontFamily: Fonts.regular,
+        fontSize: 16,
+        color: '#141414',
         marginBottom: 8,
     },
     input: {
-        backgroundColor: Colors.light.beige,
-        borderRadius: 15,
+        backgroundColor: '#EAE8DC', // Darker beige/grey for inputs as per mockup
+        borderRadius: 12,
         padding: 16,
         fontSize: 16,
-        color: Colors.light.text,
-        borderWidth: 1,
-        borderColor: 'transparent',
-    },
-    button: {
-        backgroundColor: Colors.light.primary,
-        borderRadius: 15,
-        padding: 16,
-        alignItems: 'center',
-        marginTop: 8,
-    },
-    buttonDisabled: {
-        opacity: 0.6,
-    },
-    buttonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: Fonts.regular,
+        color: '#141414',
+        height: 56,
     },
     forgotPassword: {
-        alignItems: 'center',
-        marginTop: 16,
+        alignSelf: 'flex-end',
+        marginTop: 8,
     },
     forgotPasswordText: {
-        color: Colors.light.secondary,
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    footer: {
-        marginTop: 30,
-        alignItems: 'center',
-    },
-    footerText: {
+        fontFamily: Fonts.regular,
         fontSize: 12,
-        color: Colors.light.icon,
-        textAlign: 'center',
+        color: '#141414',
+    },
+    loginButton: {
+        backgroundColor: '#141414', // Black button
+        borderRadius: 12,
+        height: 56,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    buttonDisabled: {
+        opacity: 0.7,
+    },
+    loginButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: Fonts.medium,
     },
 });
