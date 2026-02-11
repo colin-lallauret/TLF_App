@@ -2,6 +2,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { RestaurantWithRating } from '@/hooks/useRestaurants';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -10,8 +11,10 @@ interface RestaurantCardProps {
 }
 
 export function RestaurantCard({ restaurant }: RestaurantCardProps) {
+    const router = useRouter();
+
     const handlePress = () => {
-        console.log('Navigate to restaurant:', restaurant.id);
+        router.push(`/restaurant/${restaurant.id}` as any);
     };
 
     return (

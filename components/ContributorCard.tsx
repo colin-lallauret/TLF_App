@@ -34,8 +34,8 @@ export function ContributorCard({ contributor }: ContributorCardProps) {
     };
 
     const handlePress = () => {
-        // Navigation vers le profil du contributeur (à implémenter plus tard)
-        console.log('Navigation vers profil:', contributor.id);
+        // Navigation vers le profil du contributeur
+        router.push(`/contributor/${contributor.id}`);
     };
 
     return (
