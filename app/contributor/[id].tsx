@@ -9,11 +9,34 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 
+import { useConversations } from '@/hooks/useConversations';
+import { useState } from 'react';
+
 export default function ContributorProfileScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { profile, loading, error } = useContributorProfile(id as string);
     const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
+    const { startConversation } = useConversations();
+    const [contacting, setContacting] = useState(false);
+
+    const handleContact = async () => {
+        if (!profile) return;
+        setContacting(true);
+        try {
+            const convId = await startConversation(profile.id);
+            if (convId) {
+                router.push({
+                    pathname: `/conversation/${convId}`,
+                    params: { name: profile.full_name || profile.username || 'Conversation' } as any
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setContacting(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -74,7 +97,23 @@ export default function ContributorProfileScreen() {
                         <Text style={styles.city}>{profile.city || 'Ville inconnue'}</Text>
                     </View>
 
+                    <Pressable
+                        style={[styles.contactButton, contacting && styles.contactButtonDisabled]}
+                        onPress={handleContact}
+                        disabled={contacting}
+                    >
+                        {contacting ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <>
+                                <IconSymbol name="message.fill" size={16} color="#FFFFFF" />
+                                <Text style={styles.contactButtonText}>Contacter</Text>
+                            </>
+                        )}
+                    </Pressable>
+
                     <Text style={styles.bio}>{profile.bio || "Pas de biographie pour le moment."}</Text>
+
 
                     {/* Stats */}
                     <View style={styles.statsContainer}>
@@ -228,6 +267,32 @@ const styles = StyleSheet.create({
     city: {
         fontSize: 16,
         color: '#666666',
+    },
+    contactButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#E65127',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 25,
+        marginTop: 16,
+        marginBottom: 20,
+        gap: 8,
+        shadowColor: '#E65127',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 5,
+    },
+    contactButtonDisabled: {
+        backgroundColor: '#FAB5A0',
+        shadowOpacity: 0,
+    },
+    contactButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     bio: {
         fontSize: 14,

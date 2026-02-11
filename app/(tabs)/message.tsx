@@ -1,80 +1,232 @@
-import React from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { Colors } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function MessageScreen() {
-    return (
-        <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Messages</Text>
-                <Text style={styles.subtitle}>Vos conversations</Text>
-            </View>
+    const { conversations, loading, refetch } = useConversations();
+    const { user } = useAuth();
+    const router = useRouter();
 
-            <View style={styles.content}>
-                <View style={styles.placeholder}>
-                    <Text style={styles.placeholderText}>
-                        📬
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        if (days === 0) {
+            return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        } else if (days === 1) {
+            return 'Hier';
+        } else {
+            return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+    };
+
+    if (!user) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Text style={styles.title}>Messages</Text>
+                </View>
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyTitle}>Connectez-vous</Text>
+                    <Text style={styles.emptyText}>
+                        Vous devez être connecté pour échanger avec les contributeurs.
                     </Text>
-                    <Text style={styles.placeholderText}>
-                        Aucune conversation pour le moment
-                    </Text>
-                    <Text style={[styles.placeholderText, { marginTop: 10, fontSize: 12 }]}>
-                        Commencez à échanger avec les contributeurs locaux
-                    </Text>
+                    <Pressable onPress={() => router.push('/auth')} style={styles.loginButton}>
+                        <Text style={styles.loginButtonText}>Se connecter</Text>
+                    </Pressable>
+                </View>
+            </View>
+        );
+    }
+
+    const renderItem = ({ item }: { item: ConversationWithParticipant }) => {
+        const otherUser = item.other_participant;
+        const displayName = otherUser?.full_name || otherUser?.username || 'Utilisateur inconnu';
+
+        return (
+            <Pressable
+                style={({ pressed }) => [styles.conversationItem, pressed && styles.pressed]}
+                onPress={() => router.push(`/conversation/${item.id}`)}
+            >
+                <View style={styles.avatarContainer}>
+                    {otherUser?.avatar_url ? (
+                        <Image source={{ uri: otherUser.avatar_url }} style={styles.avatar} contentFit="cover" />
+                    ) : (
+                        <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarInitials}>
+                                {displayName.substring(0, 2).toUpperCase()}
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
-                <Text style={styles.infoText}>
-                    💡 Les conversations avec indicateur de messages non lus apparaîtront ici avec une pastille verte
-                </Text>
+                <View style={styles.messageContent}>
+                    <View style={styles.messageHeader}>
+                        <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
+                        <Text style={styles.time}>{formatDate(item.last_message_at)}</Text>
+                    </View>
+                    <Text style={styles.lastMessage} numberOfLines={1}>
+                        {item.last_message_text || 'Nouvelle conversation'}
+                    </Text>
+                </View>
+            </Pressable>
+        );
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={Colors.light.primary} />
             </View>
-        </ScrollView>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>Messages</Text>
+            </View>
+
+            {conversations.length > 0 ? (
+                <FlatList
+                    data={conversations}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.listContent}
+                    refreshing={loading}
+                    onRefresh={refetch}
+                />
+            ) : (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyIcon}>📬</Text>
+                    <Text style={styles.emptyTitle}>Aucune conversation</Text>
+                    <Text style={styles.emptyText}>
+                        Échangez avec les contributeurs locaux pour obtenir des conseils personnalisés.
+                    </Text>
+                </View>
+            )}
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.light.beige,
+        backgroundColor: '#FFFDF0',
     },
     header: {
-        padding: 20,
         paddingTop: 60,
-        backgroundColor: Colors.light.secondary,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        backgroundColor: '#FFFDF0',
+        borderBottomWidth: 1,
+        borderBottomColor: '#EEEEEE',
     },
     title: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#FFFFFF',
-        marginBottom: 4,
+        color: '#000000',
     },
-    subtitle: {
-        fontSize: 16,
-        color: '#FFFFFF',
-        opacity: 0.9,
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFDF0',
     },
-    content: {
+    listContent: {
         padding: 20,
     },
-    placeholder: {
+    conversationItem: {
+        flexDirection: 'row',
+        padding: 16,
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 60,
+        borderRadius: 16,
+        marginBottom: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
         alignItems: 'center',
+    },
+    pressed: {
+        opacity: 0.7,
+        backgroundColor: '#F5F5F5',
+    },
+    avatarContainer: {
+        marginRight: 16,
+    },
+    avatar: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#E0E0E0',
+    },
+    avatarPlaceholder: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#E65127',
         justifyContent: 'center',
-        marginTop: 40,
+        alignItems: 'center',
     },
-    placeholderText: {
-        color: Colors.light.icon,
+    avatarInitials: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    messageContent: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    messageHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+        alignItems: 'center',
+    },
+    userName: {
         fontSize: 16,
-        textAlign: 'center',
+        fontWeight: 'bold',
+        color: '#000000',
+        flex: 1,
+        marginRight: 8,
     },
-    infoText: {
-        marginTop: 30,
-        padding: 15,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 15,
-        color: Colors.light.text,
-        fontSize: 13,
+    time: {
+        fontSize: 12,
+        color: '#999999',
+    },
+    lastMessage: {
+        fontSize: 14,
+        color: '#666666',
         lineHeight: 20,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
+    },
+    emptyIcon: {
+        fontSize: 48,
+        marginBottom: 20,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000000',
+        marginBottom: 10,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: '#666666',
+        textAlign: 'center',
+        lineHeight: 24,
     },
 });
