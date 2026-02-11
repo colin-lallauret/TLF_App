@@ -1,4 +1,5 @@
 import { FeaturedContributors } from '@/components/FeaturedContributors';
+import { FeaturedRestaurants } from '@/components/FeaturedRestaurants';
 import { Colors } from '@/constants/theme';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -15,12 +16,8 @@ export default function ExplorerScreen() {
                 {/* Section Locaux à la Une */}
                 <FeaturedContributors />
 
-                <Text style={styles.sectionTitle}>Adresses populaires</Text>
-                <View style={styles.placeholder}>
-                    <Text style={styles.placeholderText}>
-                        Liste des restaurants recommandés
-                    </Text>
-                </View>
+                {/* Section Adresses Populaires */}
+                <FeaturedRestaurants />
 
                 <Text style={styles.sectionTitle}>Carte interactive</Text>
                 <View style={[styles.placeholder, styles.mapPlaceholder]}>
