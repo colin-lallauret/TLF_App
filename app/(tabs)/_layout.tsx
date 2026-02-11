@@ -1,81 +1,90 @@
+import { Image } from 'expo-image';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
+  const Icon = ({ source, color, size = 28 }: { source: any; color: string; size?: number }) => (
+    <Image
+      source={source}
+      style={{ width: size, height: size, tintColor: color }}
+      contentFit="contain"
+    />
+  );
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tabIconSelected,
-        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#000000',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: Colors[colorScheme ?? 'light'].background,
-          borderTopWidth: 1,
-          borderTopColor: '#E0E0E0',
-          height: Platform.OS === 'ios' ? 85 : 65,
-          paddingBottom: Platform.OS === 'ios' ? 25 : 10,
+          backgroundColor: '#FFFCF5', // Cream background
+          borderTopWidth: 0, // No border as per screenshot look? or maybe distinct. Let's keep it clean.
+          elevation: 0,
+          height: Platform.OS === 'ios' ? 90 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          fontSize: 12,
+          fontFamily: 'Fustat_500Medium', // Assuming Fustat font is available
+          marginTop: 5,
         },
       }}>
       <Tabs.Screen
         name="explorer"
         options={{
           title: 'Explorer',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="map.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/explorer.svg')} color={color} />,
         }}
       />
       <Tabs.Screen
         name="favoris"
         options={{
           title: 'Favoris',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/favoris.svg')} color={color} />,
         }}
       />
       <Tabs.Screen
         name="decouvrir"
         options={{
           title: 'Découvrir',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="magnifyingglass" color={color} />,
+          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/decouvrir.svg')} color={color} size={32} />, // slightly larger icon usually
         }}
       />
       <Tabs.Screen
         name="message"
         options={{
-          title: 'Messages',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="message.fill" color={color} />,
+          title: 'Message',
+          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/message.svg')} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/profil.svg')} color={color} />,
         }}
       />
-      {/* Hide old tabs */}
+
+      {/* Hidden tabs */}
       <Tabs.Screen
         name="index"
         options={{
-          href: null, // This hides the tab
+          href: null,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          href: null, // This hides the tab
+          href: null,
         }}
       />
     </Tabs>

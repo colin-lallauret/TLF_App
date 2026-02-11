@@ -1,6 +1,7 @@
 import { Colors, Fonts } from '@/constants/theme';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useRestaurants } from '@/hooks/useRestaurants';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RestaurantCard } from './RestaurantCard';
@@ -42,7 +43,10 @@ export function FeaturedRestaurants() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.sectionTitle}>Adresses Populaires 🍽️</Text>
+            <View style={styles.header}>
+                <Text style={styles.sectionTitle}>Les meilleures adresses</Text>
+                <Ionicons name="chevron-forward" size={20} color={Colors.light.text} />
+            </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -66,18 +70,25 @@ const styles = StyleSheet.create({
     container: {
         marginBottom: 20,
     },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        marginBottom: 12,
+        marginTop: 10,
+    },
     sectionTitle: {
         fontSize: 20,
         fontFamily: Fonts.bold,
         color: Colors.light.text,
-        marginBottom: 12,
-        paddingHorizontal: 20,
     },
     scrollView: {
         paddingLeft: 20,
     },
     scrollContent: {
         paddingRight: 20,
+        gap: 16, // Add gap between cards
     },
     loadingContainer: {
         alignItems: 'center',

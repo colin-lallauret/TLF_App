@@ -4,6 +4,7 @@ import { RestaurantMap } from '@/components/RestaurantMap';
 import { SearchBar } from '@/components/SearchBar';
 import { Colors, Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -31,8 +32,6 @@ export default function ExplorerScreen() {
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
             <View style={styles.header}>
-                <Text style={styles.title}>Explorer</Text>
-                <Text style={styles.subtitle}>Découvrez les adresses locales</Text>
                 <View style={styles.searchContainer}>
                     <SearchBar />
                 </View>
@@ -45,7 +44,11 @@ export default function ExplorerScreen() {
                 {/* Section Adresses Populaires */}
                 <FeaturedRestaurants />
 
-                <Text style={styles.sectionTitle}>Carte interactive</Text>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Carte interactive</Text>
+                    <Ionicons name="chevron-forward" size={20} color={Colors.light.text} />
+                </View>
+
                 {mapRestaurants.length > 0 ? (
                     <View style={styles.mapContainer}>
                         <RestaurantMap restaurants={mapRestaurants} />
@@ -65,44 +68,37 @@ export default function ExplorerScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.light.beige,
+        backgroundColor: '#FFFCF5', // Cream background
     },
     scrollContent: {
         flexGrow: 1,
+        paddingBottom: 40,
     },
     header: {
-        padding: 20,
         paddingTop: 60,
-        backgroundColor: Colors.light.primary,
-        zIndex: 10, // Ensure search dropdown is visible over content
-        paddingBottom: 30, // Extra padding for search bar spacing
-    },
-    title: {
-        fontSize: 32,
-        fontFamily: Fonts.bold,
-        color: '#FFFFFF',
-        marginBottom: 4,
-    },
-    subtitle: {
-        fontSize: 16,
-        fontFamily: Fonts.medium,
-        color: '#FFFFFF',
-        opacity: 0.9,
+        backgroundColor: '#FFFCF5', // Same as container
+        zIndex: 10,
+        paddingBottom: 10,
     },
     searchContainer: {
-        marginTop: 20,
+        marginTop: 0,
     },
     content: {
         paddingBottom: 20,
         zIndex: 1,
     },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        marginTop: 20,
+        marginBottom: 12,
+    },
     sectionTitle: {
         fontSize: 20,
         fontFamily: Fonts.bold,
         color: Colors.light.text,
-        marginTop: 20,
-        marginBottom: 12,
-        paddingHorizontal: 20,
     },
     placeholder: {
         backgroundColor: '#FFFFFF',
@@ -128,5 +124,7 @@ const styles = StyleSheet.create({
         height: 350,
         marginHorizontal: 20,
         marginBottom: 20,
+        borderRadius: 20,
+        overflow: 'hidden',
     },
 });

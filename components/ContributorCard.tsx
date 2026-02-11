@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors, Fonts } from '@/constants/theme';
 import { Database } from '@/types/database.types';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -14,10 +14,6 @@ interface ContributorCardProps {
     onToggleFavorite?: (id: string) => void;
 }
 
-/**
- * Composant carte pour afficher un contributeur local
- * Affiche l'avatar, le nom, la ville et la bio du contributeur
- */
 export function ContributorCard({ contributor, isFavorite: initialIsFavorite = false, onToggleFavorite }: ContributorCardProps) {
     const router = useRouter();
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -26,24 +22,7 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
         setIsFavorite(initialIsFavorite);
     }, [initialIsFavorite]);
 
-    // Fonction pour obtenir les initiales du nom
-    const getInitials = (name: string | null): string => {
-        if (!name) return '?';
-        const parts = name.split(' ');
-        if (parts.length >= 2) {
-            return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
-    };
-
-    // Tronquer la bio à 60 caractères
-    const truncateBio = (bio: string | null): string => {
-        if (!bio) return 'Contributeur local passionné';
-        return bio.length > 60 ? `${bio.substring(0, 60)}...` : bio;
-    };
-
     const handlePress = () => {
-        // Navigation vers le profil du contributeur
         router.push(`/contributor/${contributor.id}`);
     };
 
@@ -55,6 +34,21 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
         }
     };
 
+    // Helper to format name: First Name + LAST NAME
+    const formatName = (fullName: string | null) => {
+        if (!fullName) return { first: 'Anonyme', last: '' };
+        const parts = fullName.trim().split(' ');
+        if (parts.length === 1) return { first: parts[0], last: '' };
+        const first = parts.slice(0, -1).join(' ');
+        const last = parts[parts.length - 1].toUpperCase();
+        return { first, last };
+    };
+
+    const { first, last } = formatName(contributor.full_name || contributor.username);
+
+    // Placeholder data for stats if not available in profile
+    const contributionCount = 13; // This would typically come from a joined query or aggregate
+
     return (
         <Pressable
             style={({ pressed }) => [
@@ -63,57 +57,36 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
             ]}
             onPress={handlePress}
         >
-            {onToggleFavorite && (
+            <View style={styles.imageContainer}>
+                <Image
+                    source={contributor.avatar_url ? { uri: contributor.avatar_url } : require('@/assets/images/react-logo.png')} // Fallback image needed? Or initials wrapper
+                    style={styles.image}
+                    contentFit="cover"
+                />
+
                 <TouchableOpacity
                     style={styles.favoriteButton}
                     onPress={handleFavoritePress}
                     activeOpacity={0.7}
                 >
-                    <View style={styles.favoriteIconBackground}>
-                        <IconSymbol
-                            name={isFavorite ? "heart.fill" : "heart"}
-                            size={14}
-                            color={isFavorite ? Colors.light.primary : Colors.light.icon}
-                        />
-                    </View>
-                </TouchableOpacity>
-            )}
-
-            {/* Avatar */}
-            <View style={styles.avatarContainer}>
-                {contributor.avatar_url ? (
-                    <Image
-                        source={{ uri: contributor.avatar_url }}
-                        style={styles.avatar}
-                        contentFit="cover"
+                    <Ionicons
+                        name={isFavorite ? "heart" : "heart-outline"}
+                        size={20}
+                        color="#Ffffff" // White outline/fill as per screenshot usually, or maybe white outline? Screenshot shows white heart outline.
                     />
-                ) : (
-                    <View style={styles.avatarPlaceholder}>
-                        <Text style={styles.avatarInitials}>
-                            {getInitials(contributor.full_name)}
-                        </Text>
-                    </View>
-                )}
+                </TouchableOpacity>
             </View>
 
-            {/* Informations */}
             <View style={styles.infoContainer}>
-                <Text style={styles.name} numberOfLines={1}>
-                    {contributor.full_name || contributor.username || 'Anonyme'}
-                </Text>
+                <View style={styles.nameContainer}>
+                    <Text style={styles.firstName} numberOfLines={1}>{first}</Text>
+                    {last ? <Text style={styles.lastName} numberOfLines={1}>{last}</Text> : null}
+                </View>
 
-                {contributor.city && (
-                    <View style={styles.locationContainer}>
-                        <Text style={styles.locationIcon}>📍</Text>
-                        <Text style={styles.city} numberOfLines={1}>
-                            {contributor.city}
-                        </Text>
-                    </View>
-                )}
-
-                <Text style={styles.bio} numberOfLines={2}>
-                    {truncateBio(contributor.bio)}
-                </Text>
+                <View style={styles.statsContainer}>
+                    <Ionicons name="restaurant-outline" size={14} color={Colors.light.primary} />
+                    <Text style={styles.statsText}>{contributionCount}</Text>
+                </View>
             </View>
         </Pressable>
     );
@@ -121,21 +94,29 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
 
 const styles = StyleSheet.create({
     card: {
-        width: 160,
-        backgroundColor: Colors.light.background, // Beige crème
-        borderRadius: 20,
-        padding: 12,
+        width: 140,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        overflow: 'hidden',
         marginRight: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 4,
-        elevation: 3,
-        position: 'relative',
+        elevation: 2,
     },
     cardPressed: {
-        opacity: 0.8,
-        transform: [{ scale: 0.98 }],
+        opacity: 0.9,
+    },
+    imageContainer: {
+        width: '100%',
+        aspectRatio: 1, // Square image
+        backgroundColor: '#F0F0F0',
+        position: 'relative',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
     },
     favoriteButton: {
         position: 'absolute',
@@ -143,74 +124,36 @@ const styles = StyleSheet.create({
         right: 8,
         zIndex: 10,
     },
-    favoriteIconBackground: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 15,
-        width: 24,
-        height: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-    },
-    avatarContainer: {
-        alignItems: 'center',
-        marginBottom: 8,
-        marginTop: 4,
-    },
-    avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#E0E0E0',
-    },
-    avatarPlaceholder: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: Colors.light.primary, // Orange
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    avatarInitials: {
-        fontSize: 28,
-        fontFamily: Fonts.bold,
-        color: Colors.light.background,
-    },
     infoContainer: {
-        gap: 4,
+        padding: 12,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
     },
-    name: {
-        fontSize: 16,
+    nameContainer: {
+        flex: 1,
+        marginRight: 4,
+    },
+    firstName: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: '#141414',
+    },
+    lastName: {
+        fontSize: 14,
         fontFamily: Fonts.bold,
-        color: Colors.light.text,
-        textAlign: 'center',
+        color: '#141414',
+        marginTop: 0,
     },
-    locationContainer: {
+    statsContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 2,
+        gap: 4,
+        paddingBottom: 2, // Align with text baseline match
     },
-    locationIcon: {
+    statsText: {
         fontSize: 12,
-    },
-    city: {
-        fontSize: 12,
-        fontFamily: Fonts.regular,
-        color: Colors.light.icon,
-        flex: 1,
-        textAlign: 'center',
-    },
-    bio: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
-        color: Colors.light.icon,
-        textAlign: 'center',
-        lineHeight: 14,
-        marginTop: 4,
+        fontFamily: Fonts.medium,
+        color: Colors.light.primary, // Red/Primary color
     },
 });

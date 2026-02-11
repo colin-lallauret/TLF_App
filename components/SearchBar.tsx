@@ -112,28 +112,27 @@ export function SearchBar() {
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        zIndex: 100, // Ensure dropdown is above other content
+        zIndex: 100,
+        paddingHorizontal: 20,
     },
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 25,
+        justifyContent: 'center',
+        backgroundColor: '#FFFBE6', // Very light beige/cream from screenshot approximation
+        borderRadius: 30, // Fully rounded
         height: 50,
         paddingHorizontal: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        borderWidth: 1,
+        borderColor: '#EFEFEF', // Helper border if needed, or none
     },
     searchIcon: {
-        marginRight: 10,
+        marginRight: 8,
     },
     input: {
         flex: 1,
-        fontSize: 16,
-        color: Colors.light.text,
+        fontSize: 14,
+        color: '#141414',
         fontFamily: Fonts.medium,
         height: '100%',
     },
@@ -142,9 +141,9 @@ const styles = StyleSheet.create({
     },
     resultsContainer: {
         position: 'absolute',
-        top: 60, // Height of input + margin
-        left: 0,
-        right: 0,
+        top: 60,
+        left: 20,
+        right: 20,
         backgroundColor: '#FFFFFF',
         borderRadius: 16,
         paddingVertical: 8,
@@ -172,7 +171,7 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     avatarImage: {
-        borderRadius: 20, // Circular for profiles
+        borderRadius: 20,
     },
     resultTextContainer: {
         flex: 1,
@@ -185,7 +184,7 @@ const styles = StyleSheet.create({
     },
     resultSubtitle: {
         fontSize: 12,
-        fontFamily: Fonts.regular, // Using correct font enum
+        fontFamily: Fonts.regular,
         color: Colors.light.icon,
         marginTop: 2,
     },

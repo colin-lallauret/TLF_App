@@ -1,6 +1,6 @@
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors, Fonts } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
 import { RestaurantWithRating } from '@/hooks/useFavorites';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -25,12 +25,20 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
     };
 
     const handleFavoritePress = (e: any) => {
-        e.stopPropagation(); // Empêcher la navigation vers le détail
-        setIsFavorite(!isFavorite); // Optimistic UI update
+        e.stopPropagation();
+        setIsFavorite(!isFavorite);
         if (onToggleFavorite) {
             onToggleFavorite(restaurant.id);
         }
     };
+
+    // Helpers for badges
+    const getCuisineLabel = () => restaurant.food_types?.[0] || 'Varié';
+    const getPriceLabel = () => {
+        const level = restaurant.budget_level || 2;
+        return `~${level * 10}€`; // Mock price based on level
+    };
+    const getDistanceLabel = () => '2 km'; // Mock distance
 
     return (
         <Pressable
@@ -47,43 +55,53 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                     contentFit="cover"
                 />
 
-                {onToggleFavorite && (
-                    <TouchableOpacity
-                        style={styles.favoriteButton}
-                        onPress={handleFavoritePress}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.favoriteIconBackground}>
-                            <IconSymbol
-                                name={isFavorite ? "heart.fill" : "heart"}
-                                size={18}
-                                color={isFavorite ? Colors.light.primary : Colors.light.icon}
-                            />
-                        </View>
-                    </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={handleFavoritePress}
+                    activeOpacity={0.7}
+                >
+                    <Ionicons
+                        name={isFavorite ? "heart" : "heart-outline"}
+                        size={24}
+                        color="#FFF"
+                    />
+                </TouchableOpacity>
+
+                <View style={styles.badgesContainer}>
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{getCuisineLabel()}</Text>
+                        <Ionicons name="earth" size={10} color="#FFF" style={styles.badgeIcon} />
+                    </View>
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{getPriceLabel()}</Text>
+                        <Ionicons name="cash-outline" size={10} color="#FFF" style={styles.badgeIcon} />
+                    </View>
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{getDistanceLabel()}</Text>
+                        <Ionicons name="location-outline" size={10} color="#FFF" style={styles.badgeIcon} />
+                    </View>
+                </View>
             </View>
 
             <View style={styles.content}>
-                <View style={styles.header}>
+                <View style={styles.row}>
                     <Text style={styles.name} numberOfLines={1}>{restaurant.name}</Text>
-                    <View style={styles.ratingContainer}>
-                        <IconSymbol name="star.fill" size={12} color="#FFD700" />
-                        <Text style={styles.rating}>{restaurant.average_rating || '-'}</Text>
-                        <Text style={styles.reviewCount}>({restaurant.review_count || 0})</Text>
-                    </View>
+                    <Ionicons name="flame" size={18} color="#FF4500" />
                 </View>
 
-                <View style={styles.details}>
-                    <Text style={styles.cuisine} numberOfLines={1}>
-                        {restaurant.food_types?.[0] || 'Cuisine variée'}
-                        {' • '}
-                        {Array(Math.max(1, Math.min(3, restaurant.budget_level || 1))).fill('€').join('')}
-                    </Text>
-                    <View style={styles.location}>
-                        <IconSymbol name="location.fill" size={10} color={Colors.light.icon} />
-                        <Text style={styles.city}>{restaurant.city}</Text>
+                <View style={styles.ratingRow}>
+                    <Text style={styles.rating}>{restaurant.average_rating || '-'}</Text>
+                    <View style={styles.stars}>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <Ionicons
+                                key={star}
+                                name={star <= Math.round(restaurant.average_rating || 0) ? "star" : "star-outline"}
+                                size={12}
+                                color="#FF4500"
+                            />
+                        ))}
                     </View>
+                    <Text style={styles.reviewCount}>({restaurant.review_count || 13})</Text>
                 </View>
             </View>
         </Pressable>
@@ -92,25 +110,23 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
 
 const styles = StyleSheet.create({
     card: {
-        width: 280,
-        backgroundColor: Colors.light.background,
-        borderRadius: 20,
+        width: 250,
+        backgroundColor: '#FFFCF5', // Cream background to match page
+        borderRadius: 16, // Less rounded than before maybe?
         marginRight: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-        overflow: 'hidden',
+        paddingBottom: 5,
+        // No shadow/elevation in screenshot for the card itself, it seems flat on the bg
     },
     cardPressed: {
         opacity: 0.9,
-        transform: [{ scale: 0.98 }],
     },
     imageContainer: {
-        position: 'relative',
         width: '100%',
-        height: 150,
+        height: 180,
+        borderRadius: 16,
+        overflow: 'hidden',
+        position: 'relative',
+        marginBottom: 8,
     },
     image: {
         width: '100%',
@@ -119,27 +135,38 @@ const styles = StyleSheet.create({
     },
     favoriteButton: {
         position: 'absolute',
-        top: 10,
-        right: 10,
+        top: 12,
+        right: 12,
         zIndex: 10,
     },
-    favoriteIconBackground: {
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 20,
-        width: 32,
-        height: 32,
-        justifyContent: 'center',
+    badgesContainer: {
+        position: 'absolute',
+        bottom: 12,
+        left: 12,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    badge: {
+        flexDirection: 'row',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        backgroundColor: 'rgba(50, 80, 50, 0.7)', // Dark green translucent
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 4,
+    },
+    badgeText: {
+        color: '#FFF',
+        fontSize: 10,
+        fontFamily: Fonts.medium,
+    },
+    badgeIcon: {
+        marginLeft: 0,
     },
     content: {
-        padding: 12,
+        paddingHorizontal: 4,
     },
-    header: {
+    row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -148,51 +175,26 @@ const styles = StyleSheet.create({
     name: {
         fontSize: 16,
         fontFamily: Fonts.bold,
-        color: Colors.light.text,
+        color: '#141414',
         flex: 1,
-        marginRight: 8,
     },
-    ratingContainer: {
+    ratingRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#FFFDF0',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: Colors.light.primary,
+        gap: 6,
     },
     rating: {
-        fontSize: 12,
+        fontSize: 14,
         fontFamily: Fonts.bold,
-        color: Colors.light.primary,
-        marginLeft: 4,
+        color: '#141414',
     },
-    reviewCount: {
-        fontSize: 10,
-        fontFamily: Fonts.regular,
-        color: Colors.light.icon,
-        marginLeft: 2,
-    },
-    details: {
+    stars: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    cuisine: {
-        fontSize: 12,
-        fontFamily: Fonts.medium,
-        color: Colors.light.icon,
-        flex: 1,
-    },
-    location: {
-        flexDirection: 'row',
-        alignItems: 'center',
         gap: 2,
     },
-    city: {
+    reviewCount: {
         fontSize: 12,
         fontFamily: Fonts.regular,
-        color: Colors.light.icon,
+        color: '#666',
     },
 });
