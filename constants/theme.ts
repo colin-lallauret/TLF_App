@@ -5,25 +5,34 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// TravelLocalFood Brand Colors
+const primaryOrange = '#E65127';
+const secondaryGreen = '#006400';
+const beigeBackground = '#FFFDF0';
+const textBlack = '#000000';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: textBlack,
+    background: beigeBackground,
+    tint: primaryOrange,
+    icon: '#666666',
+    tabIconDefault: '#999999',
+    tabIconSelected: primaryOrange,
+    primary: primaryOrange,
+    secondary: secondaryGreen,
+    beige: beigeBackground,
   },
   dark: {
     text: '#ECEDEE',
     background: '#151718',
-    tint: tintColorDark,
+    tint: primaryOrange,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: primaryOrange,
+    primary: primaryOrange,
+    secondary: secondaryGreen,
+    beige: beigeBackground,
   },
 };
 
