@@ -1,10 +1,9 @@
-import { Colors } from '@/constants/theme';
-import { useRestaurants } from '@/hooks/useRestaurants';
+import { Colors, Fonts } from '@/constants/theme';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
-import React, { useCallback } from 'react';
+import { useRestaurants } from '@/hooks/useRestaurants';
+import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RestaurantCard } from './RestaurantCard';
-import { useFocusEffect } from 'expo-router';
 
 export function FeaturedRestaurants() {
     const { restaurants, loading, error } = useRestaurants(100);
@@ -69,7 +68,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: Colors.light.text,
         marginBottom: 12,
         paddingHorizontal: 20,
@@ -86,7 +85,8 @@ const styles = StyleSheet.create({
         height: 200,
     },
     errorText: {
-        color: 'red',
+        color: Colors.light.error,
+        fontFamily: Fonts.medium,
         textAlign: 'center',
         padding: 20,
     },
@@ -99,5 +99,6 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         color: Colors.light.icon,
+        fontFamily: Fonts.medium,
     },
 });

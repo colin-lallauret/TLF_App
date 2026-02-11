@@ -1,10 +1,10 @@
 import { FeaturedContributors } from '@/components/FeaturedContributors';
 import { FeaturedRestaurants } from '@/components/FeaturedRestaurants';
-import { Colors } from '@/constants/theme';
-import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { supabase } from '@/lib/supabase';
 import { RestaurantMap } from '@/components/RestaurantMap';
+import { Colors, Fonts } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function ExplorerScreen() {
     const [mapRestaurants, setMapRestaurants] = useState<any[]>([]);
@@ -70,12 +70,13 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 32,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: '#FFFFFF',
         marginBottom: 4,
     },
     subtitle: {
         fontSize: 16,
+        fontFamily: Fonts.medium,
         color: '#FFFFFF',
         opacity: 0.9,
     },
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: Colors.light.text,
         marginTop: 20,
         marginBottom: 12,
@@ -107,6 +108,7 @@ const styles = StyleSheet.create({
     placeholderText: {
         color: Colors.light.icon,
         fontSize: 14,
+        fontFamily: Fonts.medium,
         textAlign: 'center',
     },
     mapContainer: {

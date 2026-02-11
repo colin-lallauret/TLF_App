@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useSouvenirs } from '@/hooks/useSouvenirs';
@@ -191,12 +191,12 @@ const styles = StyleSheet.create({
     },
     avatarText: {
         fontSize: 50,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: Colors.light.primary,
     },
     userName: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: '#FFFFFF',
         marginBottom: 5,
     },
@@ -206,12 +206,14 @@ const styles = StyleSheet.create({
         opacity: 0.9,
         textAlign: 'center',
         paddingHorizontal: 20,
+        fontFamily: Fonts.regular,
     },
     userCity: {
         fontSize: 14,
         color: '#FFFFFF',
         opacity: 0.9,
         marginTop: 5,
+        fontFamily: Fonts.regular,
     },
     badgeContainer: {
         marginTop: 10,
@@ -222,7 +224,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         paddingVertical: 5,
         borderRadius: 15,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         fontSize: 12,
     },
     content: {
@@ -241,13 +243,14 @@ const styles = StyleSheet.create({
     },
     statNumber: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: Colors.light.primary,
     },
     statLabel: {
         fontSize: 12,
         color: Colors.light.icon,
         marginTop: 5,
+        fontFamily: Fonts.regular,
     },
     addButton: {
         backgroundColor: Colors.light.secondary,
@@ -259,7 +262,7 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
     },
     infoSection: {
         backgroundColor: '#FFFFFF',
@@ -271,16 +274,16 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: Colors.light.icon,
         marginBottom: 4,
-        fontWeight: '600',
+        fontFamily: Fonts.semiBold,
     },
     infoValue: {
         fontSize: 16,
         color: Colors.light.text,
-        fontWeight: '500',
+        fontFamily: Fonts.medium,
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: Colors.light.text,
         marginTop: 10,
         marginBottom: 12,
@@ -297,6 +300,7 @@ const styles = StyleSheet.create({
         color: Colors.light.icon,
         fontSize: 14,
         textAlign: 'center',
+        fontFamily: Fonts.regular,
     },
     logoutButton: {
         backgroundColor: '#FFFFFF',
@@ -311,7 +315,7 @@ const styles = StyleSheet.create({
     logoutButtonText: {
         color: '#FF4444',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
     },
     souvenirsList: {
         gap: 16,
@@ -343,7 +347,7 @@ const styles = StyleSheet.create({
     },
     souvenirTitle: {
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         flex: 1,
         marginRight: 10,
     },
@@ -358,22 +362,25 @@ const styles = StyleSheet.create({
     },
     ratingText: {
         color: '#fff',
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         fontSize: 12,
     },
     souvenirRestaurant: {
         fontSize: 14,
         color: '#666',
         marginBottom: 4,
+        fontFamily: Fonts.regular,
     },
     souvenirDate: {
         fontSize: 12,
         color: '#999',
         marginBottom: 8,
+        fontFamily: Fonts.regular,
     },
     souvenirDescription: {
         fontSize: 14,
         color: '#444',
         lineHeight: 20,
+        fontFamily: Fonts.regular,
     },
 });

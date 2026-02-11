@@ -1,3 +1,4 @@
+import { Colors, Fonts } from '@/constants/theme';
 import { useContributors } from '@/hooks/useContributors';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import React from 'react';
@@ -17,7 +18,7 @@ export function FeaturedContributors() {
             <View style={styles.container}>
                 <Text style={styles.title}>Locaux à la Une 🌟</Text>
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#E65127" />
+                    <ActivityIndicator size="large" color={Colors.light.primary} />
                     <Text style={styles.loadingText}>Chargement des contributeurs...</Text>
                 </View>
             </View>
@@ -86,8 +87,8 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#E65127', // Orange
+        fontFamily: Fonts.bold,
+        color: Colors.light.primary,
         marginBottom: 16,
         paddingHorizontal: 16,
     },
@@ -105,7 +106,8 @@ const styles = StyleSheet.create({
     },
     loadingText: {
         fontSize: 14,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
     },
     errorContainer: {
         alignItems: 'center',
@@ -119,13 +121,14 @@ const styles = StyleSheet.create({
     },
     errorText: {
         fontSize: 16,
-        fontWeight: '600',
-        color: '#000000',
+        fontFamily: Fonts.semiBold,
+        color: Colors.light.text,
         textAlign: 'center',
     },
     errorSubtext: {
         fontSize: 12,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
         textAlign: 'center',
     },
     emptyContainer: {
@@ -140,13 +143,14 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        fontWeight: '600',
-        color: '#000000',
+        fontFamily: Fonts.semiBold,
+        color: Colors.light.text,
         textAlign: 'center',
     },
     emptySubtext: {
         fontSize: 12,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
         textAlign: 'center',
     },
 });

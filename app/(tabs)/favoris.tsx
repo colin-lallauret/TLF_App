@@ -1,11 +1,11 @@
-import React, { useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
-import { Colors } from '@/constants/theme';
-import { useFavorites } from '@/hooks/useFavorites';
-import { useFavoriteIds } from '@/hooks/useFavoriteIds';
-import { RestaurantCard } from '@/components/RestaurantCard';
 import { ContributorCard } from '@/components/ContributorCard';
+import { RestaurantCard } from '@/components/RestaurantCard';
+import { Colors, Fonts } from '@/constants/theme';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useFocusEffect } from 'expo-router';
+import React, { useCallback } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function FavorisScreen() {
     const { favoriteRestaurants, favoriteContributors, loading, refreshFavorites } = useFavorites();
@@ -105,12 +105,13 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: '#FFFFFF',
         marginBottom: 4,
     },
     subtitle: {
         fontSize: 16,
+        fontFamily: Fonts.medium,
         color: '#FFFFFF',
         opacity: 0.9,
     },
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         color: Colors.light.text,
         marginBottom: 16,
         paddingHorizontal: 20,
@@ -153,12 +154,13 @@ const styles = StyleSheet.create({
     emptyText: {
         color: Colors.light.text,
         fontSize: 16,
-        fontWeight: '500',
+        fontFamily: Fonts.medium,
         textAlign: 'center',
     },
     emptySubText: {
         color: Colors.light.icon,
         fontSize: 14,
+        fontFamily: Fonts.regular,
         marginTop: 4,
         textAlign: 'center',
     },

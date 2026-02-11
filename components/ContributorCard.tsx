@@ -1,9 +1,10 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors, Fonts } from '@/constants/theme';
 import { Database } from '@/types/database.types';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -72,7 +73,7 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
                         <IconSymbol
                             name={isFavorite ? "heart.fill" : "heart"}
                             size={14}
-                            color={isFavorite ? "#E65127" : "#666666"}
+                            color={isFavorite ? Colors.light.primary : Colors.light.icon}
                         />
                     </View>
                 </TouchableOpacity>
@@ -121,7 +122,7 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
 const styles = StyleSheet.create({
     card: {
         width: 160,
-        backgroundColor: '#FFFDF0', // Beige crème
+        backgroundColor: Colors.light.background, // Beige crème
         borderRadius: 20,
         padding: 12,
         marginRight: 12,
@@ -170,22 +171,22 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#E65127', // Orange
+        backgroundColor: Colors.light.primary, // Orange
         justifyContent: 'center',
         alignItems: 'center',
     },
     avatarInitials: {
         fontSize: 28,
-        fontWeight: 'bold',
-        color: '#FFFDF0',
+        fontFamily: Fonts.bold,
+        color: Colors.light.background,
     },
     infoContainer: {
         gap: 4,
     },
     name: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
+        fontFamily: Fonts.bold,
+        color: Colors.light.text,
         textAlign: 'center',
     },
     locationContainer: {
@@ -199,13 +200,15 @@ const styles = StyleSheet.create({
     },
     city: {
         fontSize: 12,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
         flex: 1,
         textAlign: 'center',
     },
     bio: {
         fontSize: 11,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
         textAlign: 'center',
         lineHeight: 14,
         marginTop: 4,

@@ -6,57 +6,43 @@
 import { Platform } from 'react-native';
 
 // TravelLocalFood Brand Colors
-const primaryOrange = '#E65127';
-const secondaryGreen = '#006400';
-const beigeBackground = '#FFFDF0';
-const textBlack = '#000000';
+const brandBlack = '#141414';
+const brandOrange = '#DC4928';
+const brandCream = '#FFFCEB';
+const brandGreen = '#00661D';
 
 export const Colors = {
   light: {
-    text: textBlack,
-    background: beigeBackground,
-    tint: primaryOrange,
+    text: brandBlack,
+    background: brandCream,
+    tint: brandOrange,
     icon: '#666666',
     tabIconDefault: '#999999',
-    tabIconSelected: primaryOrange,
-    primary: primaryOrange,
-    secondary: secondaryGreen,
-    beige: beigeBackground,
+    tabIconSelected: brandOrange,
+    primary: brandOrange,
+    secondary: brandGreen,
+    beige: brandCream,
+    // Semantic colors
+    success: brandGreen,
+    error: '#D32F2F',
+    warning: '#FBC02D',
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
-    tint: primaryOrange,
+    background: '#151718', // Ou brandBlack si on veut un dark mode très contrasté
+    tint: brandOrange,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
-    tabIconSelected: primaryOrange,
-    primary: primaryOrange,
-    secondary: secondaryGreen,
-    beige: beigeBackground,
+    tabIconSelected: brandOrange,
+    primary: brandOrange,
+    secondary: brandGreen,
+    beige: brandBlack, // En dark mode, le beige devient noir/sombre
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export const Fonts = {
+  regular: 'Fustat_400Regular',
+  medium: 'Fustat_500Medium',
+  semiBold: 'Fustat_600SemiBold',
+  bold: 'Fustat_700Bold',
+};

@@ -1,4 +1,4 @@
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
 import { Image } from 'expo-image';
@@ -52,7 +52,7 @@ export default function MessageScreen() {
         return (
             <Pressable
                 style={({ pressed }) => [styles.conversationItem, pressed && styles.pressed]}
-                onPress={() => router.push(`/conversation/${item.id}`)}
+                onPress={() => router.push(`/conversation/${item.id}` as any)}
             >
                 <View style={styles.avatarContainer}>
                     {otherUser?.avatar_url ? (
@@ -118,26 +118,26 @@ export default function MessageScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF0',
+        backgroundColor: Colors.light.background,
     },
     header: {
         paddingTop: 60,
         paddingHorizontal: 20,
         paddingBottom: 20,
-        backgroundColor: '#FFFDF0',
+        backgroundColor: Colors.light.background,
         borderBottomWidth: 1,
         borderBottomColor: '#EEEEEE',
     },
     title: {
         fontSize: 32,
-        fontWeight: 'bold',
-        color: '#000000',
+        fontFamily: Fonts.bold,
+        color: Colors.light.text,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#FFFDF0',
+        backgroundColor: Colors.light.background,
     },
     listContent: {
         padding: 20,
@@ -172,13 +172,13 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#E65127',
+        backgroundColor: Colors.light.primary,
         justifyContent: 'center',
         alignItems: 'center',
     },
     avatarInitials: {
         color: '#FFFFFF',
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
         fontSize: 18,
     },
     messageContent: {
@@ -193,19 +193,21 @@ const styles = StyleSheet.create({
     },
     userName: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
+        fontFamily: Fonts.bold,
+        color: Colors.light.text,
         flex: 1,
         marginRight: 8,
     },
     time: {
         fontSize: 12,
         color: '#999999',
+        fontFamily: Fonts.regular,
     },
     lastMessage: {
         fontSize: 14,
         color: '#666666',
         lineHeight: 20,
+        fontFamily: Fonts.regular,
     },
     emptyContainer: {
         flex: 1,
@@ -219,8 +221,8 @@ const styles = StyleSheet.create({
     },
     emptyTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
-        color: '#000000',
+        fontFamily: Fonts.bold,
+        color: Colors.light.text,
         marginBottom: 10,
     },
     emptyText: {
@@ -228,5 +230,18 @@ const styles = StyleSheet.create({
         color: '#666666',
         textAlign: 'center',
         lineHeight: 24,
+        fontFamily: Fonts.regular,
     },
+    loginButton: {
+        marginTop: 20,
+        backgroundColor: Colors.light.primary,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 20,
+    },
+    loginButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: Fonts.bold,
+    }
 });

@@ -1,10 +1,10 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { RestaurantWithRating } from '@/hooks/useFavorites';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface RestaurantCardProps {
     restaurant: RestaurantWithRating;
@@ -57,7 +57,7 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                             <IconSymbol
                                 name={isFavorite ? "heart.fill" : "heart"}
                                 size={18}
-                                color={isFavorite ? "#E65127" : "#666666"}
+                                color={isFavorite ? Colors.light.primary : Colors.light.icon}
                             />
                         </View>
                     </TouchableOpacity>
@@ -93,7 +93,7 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
 const styles = StyleSheet.create({
     card: {
         width: 280,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: Colors.light.background,
         borderRadius: 20,
         marginRight: 16,
         shadowColor: '#000',
@@ -147,8 +147,8 @@ const styles = StyleSheet.create({
     },
     name: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#000000',
+        fontFamily: Fonts.bold,
+        color: Colors.light.text,
         flex: 1,
         marginRight: 8,
     },
@@ -160,17 +160,18 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#E65127',
+        borderColor: Colors.light.primary,
     },
     rating: {
         fontSize: 12,
-        fontWeight: 'bold',
-        color: '#E65127',
+        fontFamily: Fonts.bold,
+        color: Colors.light.primary,
         marginLeft: 4,
     },
     reviewCount: {
         fontSize: 10,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
         marginLeft: 2,
     },
     details: {
@@ -180,7 +181,8 @@ const styles = StyleSheet.create({
     },
     cuisine: {
         fontSize: 12,
-        color: '#666666',
+        fontFamily: Fonts.medium,
+        color: Colors.light.icon,
         flex: 1,
     },
     location: {
@@ -190,6 +192,7 @@ const styles = StyleSheet.create({
     },
     city: {
         fontSize: 12,
-        color: '#666666',
+        fontFamily: Fonts.regular,
+        color: Colors.light.icon,
     },
 });
