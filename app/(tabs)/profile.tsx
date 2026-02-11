@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useSouvenirs } from '@/hooks/useSouvenirs';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
     const { user, profile, signOut } = useAuth();
     const router = useRouter();
+    const { fetchMySouvenirs } = useSouvenirs();
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+    const [mySouvenirs, setMySouvenirs] = useState<any[]>([]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (user) {
+                fetchMySouvenirs().then(setMySouvenirs);
+            }
+        }, [user, fetchMySouvenirs])
+    );
 
     const handleLogout = () => {
         setShowLogoutDialog(true);
@@ -54,7 +66,7 @@ export default function ProfileScreen() {
             <View style={styles.content}>
                 <View style={styles.statsContainer}>
                     <View style={styles.statBox}>
-                        <Text style={styles.statNumber}>0</Text>
+                        <Text style={styles.statNumber}>{mySouvenirs.length}</Text>
                         <Text style={styles.statLabel}>Souvenirs</Text>
                     </View>
                     <View style={styles.statBox}>
@@ -68,7 +80,10 @@ export default function ProfileScreen() {
                 </View>
 
                 {!profile?.is_contributor && (
-                    <TouchableOpacity style={styles.addButton}>
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => router.push('/souvenir/add' as any)}
+                    >
                         <Text style={styles.addButtonText}>+ Ajouter un souvenir</Text>
                     </TouchableOpacity>
                 )}
@@ -93,14 +108,47 @@ export default function ProfileScreen() {
                 </View>
 
                 <Text style={styles.sectionTitle}>Mes souvenirs</Text>
-                <View style={styles.placeholder}>
-                    <Text style={styles.placeholderText}>
-                        Vos souvenirs de voyage apparaîtront ici
-                    </Text>
-                    <Text style={[styles.placeholderText, { marginTop: 10, fontSize: 12 }]}>
-                        Photos, notes et carnets de voyage
-                    </Text>
-                </View>
+
+                {mySouvenirs.length === 0 ? (
+                    <View style={styles.placeholder}>
+                        <Text style={styles.placeholderText}>
+                            Vos souvenirs de voyage apparaîtront ici
+                        </Text>
+                        <Text style={[styles.placeholderText, { marginTop: 10, fontSize: 12 }]}>
+                            Photos, notes et carnets de voyage
+                        </Text>
+                    </View>
+                ) : (
+                    <View style={styles.souvenirsList}>
+                        {mySouvenirs.map((souvenir, index) => (
+                            <View key={souvenir.id || index} style={styles.souvenirCard}>
+                                {souvenir.photos_urls && souvenir.photos_urls[0] && (
+                                    <Image source={{ uri: souvenir.photos_urls[0] }} style={styles.souvenirImage} />
+                                )}
+                                <View style={styles.souvenirContent}>
+                                    <View style={styles.souvenirHeader}>
+                                        <Text style={styles.souvenirTitle} numberOfLines={1}>{souvenir.title}</Text>
+                                        <View style={styles.ratingBadge}>
+                                            <Ionicons name="star" size={12} color="#fff" />
+                                            <Text style={styles.ratingText}>{souvenir.rating}</Text>
+                                        </View>
+                                    </View>
+                                    <Text style={styles.souvenirRestaurant}>
+                                        <Ionicons name="restaurant-outline" size={14} color="#666" /> {souvenir.restaurants?.name || 'Restaurant inconnu'}
+                                    </Text>
+                                    <Text style={styles.souvenirDate}>
+                                        {new Date(souvenir.date).toLocaleDateString()}
+                                    </Text>
+                                    {souvenir.description && (
+                                        <Text style={styles.souvenirDescription} numberOfLines={2}>
+                                            {souvenir.description}
+                                        </Text>
+                                    )}
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                )}
 
                 <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutButtonText}>Se déconnecter</Text>
@@ -258,10 +306,74 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#FF4444',
         marginTop: 10,
+        marginBottom: 40,
     },
     logoutButtonText: {
         color: '#FF4444',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    souvenirsList: {
+        gap: 16,
+        marginBottom: 20,
+    },
+    souvenirCard: {
+        backgroundColor: '#FFF',
+        borderRadius: 15,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    souvenirImage: {
+        width: '100%',
+        height: 150,
+        backgroundColor: '#eee',
+    },
+    souvenirContent: {
+        padding: 15,
+    },
+    souvenirHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    souvenirTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        flex: 1,
+        marginRight: 10,
+    },
+    ratingBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFD700',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 10,
+        gap: 4,
+    },
+    ratingText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 12,
+    },
+    souvenirRestaurant: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 4,
+    },
+    souvenirDate: {
+        fontSize: 12,
+        color: '#999',
+        marginBottom: 8,
+    },
+    souvenirDescription: {
+        fontSize: 14,
+        color: '#444',
+        lineHeight: 20,
     },
 });
