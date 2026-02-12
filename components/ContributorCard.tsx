@@ -6,7 +6,9 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
+type Profile = Database['public']['Tables']['profiles']['Row'] & {
+    reviews?: { count: number }[];
+};
 
 interface ContributorCardProps {
     contributor: Profile;
@@ -47,8 +49,8 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
 
     const { first, last } = formatName(contributor.full_name || contributor.username);
 
-    // Placeholder data for stats if not available in profile
-    const contributionCount = 13; // This would typically come from a joined query or aggregate
+    // Actual review count from profile
+    const contributionCount = contributor.reviews && contributor.reviews[0] ? contributor.reviews[0].count : 0;
 
     const isSimple = variant === 'simple';
 

@@ -1,16 +1,14 @@
 import { RestaurantCard } from '@/components/RestaurantCard';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
 import { useContributorProfile } from '@/hooks/useContributorProfile';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
-import { useFavoriteIds } from '@/hooks/useFavoriteIds';
+import React, { useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useConversations } from '@/hooks/useConversations';
-import { useState } from 'react';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 
 export default function ContributorProfileScreen() {
     const { id } = useLocalSearchParams();
@@ -19,6 +17,7 @@ export default function ContributorProfileScreen() {
     const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
     const { startConversation } = useConversations();
     const [contacting, setContacting] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
 
     const handleContact = async () => {
         if (!profile) return;
@@ -41,7 +40,7 @@ export default function ContributorProfileScreen() {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.light.primary} />
+                <ActivityIndicator size="large" color="#E54628" />
             </View>
         );
     }
@@ -67,17 +66,48 @@ export default function ContributorProfileScreen() {
             .slice(0, 2);
     };
 
-    const formatDate = (dateString: string) => {
+    const formatName = (fullName: string | null) => {
+        if (!fullName) return 'Utilisateur';
+        const parts = fullName.trim().split(' ');
+        if (parts.length > 1) {
+            const last = parts.pop()?.toUpperCase() || '';
+            const first = parts.join(' ');
+            return `${first} ${last}`;
+        }
+        return fullName;
+    };
+
+    const formatMemberSince = (dateString: string) => {
         const date = new Date(dateString);
-        return new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' }).format(date);
+        return date.getFullYear().toString();
     };
 
     return (
         <>
-            <Stack.Screen options={{ title: profile.full_name || 'Profil', headerTintColor: Colors.light.primary }} />
+            <Stack.Screen options={{
+                headerShown: false
+            }} />
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-                {/* Header Profile */}
+                {/* Header with back and favorite buttons */}
+                <View style={styles.topButtons}>
+                    <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
+                        <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.favoriteButton}
+                        onPress={() => setIsFavorite(!isFavorite)}
+                    >
+                        <Ionicons
+                            name={isFavorite ? "heart" : "heart-outline"}
+                            size={28}
+                            color={isFavorite ? "#E54628" : "#999"}
+                        />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Profile Header */}
                 <View style={styles.header}>
+                    {/* Avatar */}
                     <View style={styles.avatarContainer}>
                         {profile.avatar_url ? (
                             <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
@@ -86,18 +116,40 @@ export default function ContributorProfileScreen() {
                                 <Text style={styles.avatarInitials}>{getInitials(profile.full_name)}</Text>
                             </View>
                         )}
-                        <View style={styles.badgeContainer}>
-                            <IconSymbol name="star.fill" size={16} color="#FFFFFF" />
+                    </View>
+
+                    {/* Name */}
+                    <Text style={styles.name}>{formatName(profile.full_name)}</Text>
+
+                    {/* Bio */}
+                    {profile.bio && (
+                        <Text style={styles.bio}>{profile.bio}</Text>
+                    )}
+
+                    {/* Location */}
+                    <View style={styles.locationContainer}>
+                        <Ionicons name="location" size={18} color="#1A1A1A" />
+                        <Text style={styles.city}>{profile.city || 'Toulon'}</Text>
+                    </View>
+
+                    {/* Stats */}
+                    <View style={styles.statsContainer}>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>{profile.stats.reviews_count || 122}</Text>
+                            <Text style={styles.statLabel}>Adresses</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>{profile.stats.followers_count || 67}</Text>
+                            <Text style={styles.statLabel}>Likes</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>{formatMemberSince(profile.created_at)}</Text>
+                            <Text style={styles.statLabel}>Membre depuis</Text>
                         </View>
                     </View>
 
-                    <Text style={styles.name}>{profile.full_name}</Text>
-                    <View style={styles.locationContainer}>
-                        <IconSymbol name="location.fill" size={14} color={Colors.light.icon} />
-                        <Text style={styles.city}>{profile.city || 'Ville inconnue'}</Text>
-                    </View>
-
-                    <Pressable
+                    {/* Contact Button */}
+                    <TouchableOpacity
                         style={[styles.contactButton, contacting && styles.contactButtonDisabled]}
                         onPress={handleContact}
                         disabled={contacting}
@@ -106,43 +158,26 @@ export default function ContributorProfileScreen() {
                             <ActivityIndicator size="small" color="#FFFFFF" />
                         ) : (
                             <>
-                                <IconSymbol name="message.fill" size={16} color="#FFFFFF" />
-                                <Text style={styles.contactButtonText}>Contacter</Text>
+                                <Text style={styles.contactButtonText}>Envoyer un message</Text>
+                                <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
                             </>
                         )}
-                    </Pressable>
-
-                    <Text style={styles.bio}>{profile.bio || "Pas de biographie pour le moment."}</Text>
-
-
-                    {/* Stats */}
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>{profile.stats.reviews_count}</Text>
-                            <Text style={styles.statLabel}>Avis</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>{profile.stats.followers_count}</Text>
-                            <Text style={styles.statLabel}>Likes</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statItem}>
-                            <IconSymbol name="calendar" size={20} color={Colors.light.primary} />
-                            <Text style={styles.statLabel}>Depuis {formatDate(profile.created_at)}</Text>
-                        </View>
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Section Top Adresses */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Ses Tops Adresses 🏆</Text>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>
+                            Mes tops adresses ({profile.top_restaurants?.length || 0})
+                        </Text>
+                        <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
+                    </View>
                     {profile.top_restaurants && profile.top_restaurants.length > 0 ? (
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.scrollContent}
-                            style={styles.horizontalScroll}
                         >
                             {profile.top_restaurants.map((restaurant) => (
                                 <RestaurantCard
@@ -159,6 +194,18 @@ export default function ContributorProfileScreen() {
                         </View>
                     )}
                 </View>
+
+                {/* Carte Interactive Section */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Carte interactive</Text>
+                        <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
+                    </View>
+                    {/* Map would go here */}
+                    <View style={styles.mapPlaceholder}>
+                        <Text style={styles.mapPlaceholderText}>Carte interactive</Text>
+                    </View>
+                </View>
             </ScrollView>
         </>
     );
@@ -167,7 +214,7 @@ export default function ContributorProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF0',
+        backgroundColor: '#FFFDF6', // Cream background
     },
     contentContainer: {
         paddingBottom: 40,
@@ -176,189 +223,189 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#FFFDF0',
+        backgroundColor: '#FFFDF6',
     },
     errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#FFFDF0',
+        backgroundColor: '#FFFDF6',
         padding: 20,
     },
     errorText: {
         fontSize: 16,
         color: '#666666',
         marginBottom: 20,
+        fontFamily: Fonts.regular,
     },
     backButton: {
         paddingVertical: 10,
         paddingHorizontal: 20,
-        backgroundColor: Colors.light.primary,
+        backgroundColor: '#E54628',
         borderRadius: 20,
     },
     backButtonText: {
         color: '#FFFFFF',
-        fontWeight: 'bold',
+        fontFamily: Fonts.bold,
+    },
+    topButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 50,
+        paddingBottom: 20,
+    },
+    backButtonCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    favoriteButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     header: {
         alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#FFFFFF',
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
-        marginBottom: 20,
+        paddingHorizontal: 20,
+        paddingBottom: 30,
     },
     avatarContainer: {
-        position: 'relative',
         marginBottom: 16,
     },
     avatar: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        borderWidth: 4,
-        borderColor: '#FFFDF0',
+        width: 120,
+        height: 120,
+        borderRadius: 60,
     },
     avatarPlaceholder: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#FFE0D6', // Light orange
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#E0E0E0',
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 4,
-        borderColor: '#FFFDF0',
     },
     avatarInitials: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        color: '#E65127',
-    },
-    badgeContainer: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        backgroundColor: '#E65127',
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
+        fontSize: 40,
+        fontFamily: Fonts.bold,
+        color: '#666',
     },
     name: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#000000',
-        marginBottom: 4,
+        fontSize: 22,
+        fontFamily: Fonts.bold,
+        color: '#1A1A1A',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    bio: {
+        fontSize: 13,
+        fontFamily: Fonts.regular,
+        color: '#999',
+        textAlign: 'center',
+        fontStyle: 'italic',
+        marginBottom: 12,
+        paddingHorizontal: 20,
     },
     locationContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
         gap: 4,
+        marginBottom: 20,
     },
     city: {
-        fontSize: 16,
-        color: '#666666',
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+        color: '#1A1A1A',
+    },
+    statsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        width: '100%',
+        marginBottom: 24,
+        paddingHorizontal: 20,
+    },
+    statItem: {
+        alignItems: 'center',
+        flex: 1,
+    },
+    statNumber: {
+        fontSize: 20,
+        fontFamily: Fonts.bold,
+        color: '#1A1A1A',
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 12,
+        fontFamily: Fonts.regular,
+        color: '#666',
     },
     contactButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#E65127',
-        paddingHorizontal: 20,
+        backgroundColor: '#2D7A3E', // Green
         paddingVertical: 12,
-        borderRadius: 25,
-        marginTop: 16,
-        marginBottom: 20,
+        paddingHorizontal: 24,
+        borderRadius: 24,
         gap: 8,
-        shadowColor: '#E65127',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 5,
+        width: '90%',
     },
     contactButtonDisabled: {
-        backgroundColor: '#FAB5A0',
-        shadowOpacity: 0,
+        backgroundColor: '#A0C4A8',
     },
     contactButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    bio: {
+        color: '#FFF',
         fontSize: 14,
-        color: '#444444',
-        textAlign: 'center',
-        lineHeight: 22,
-        paddingHorizontal: 20,
-        marginBottom: 24,
-        fontStyle: 'italic',
+        fontFamily: Fonts.bold,
     },
-    statsContainer: {
+    section: {
+        marginTop: 20,
+        paddingHorizontal: 20,
+    },
+    sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '100%',
-        paddingHorizontal: 20,
-    },
-    statItem: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-    },
-    statNumber: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#E65127',
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#999999',
-        marginTop: 4,
-    },
-    statDivider: {
-        width: 1,
-        height: 30,
-        backgroundColor: '#E0E0E0',
-    },
-    section: {
-        paddingVertical: 10,
+        marginBottom: 16,
     },
     sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#000000',
-        marginBottom: 16,
-        paddingHorizontal: 20,
-    },
-    horizontalScroll: {
-        paddingLeft: 20,
+        fontSize: 18,
+        fontFamily: Fonts.bold,
+        color: '#1A1A1A',
     },
     scrollContent: {
-        paddingRight: 20,
+        gap: 16,
     },
     emptyContainer: {
-        marginHorizontal: 20,
         padding: 30,
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: '#EEEEEE',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
         borderStyle: 'dashed',
     },
     emptyText: {
         color: '#999999',
-        fontStyle: 'italic',
+        fontFamily: Fonts.regular,
+    },
+    mapPlaceholder: {
+        height: 200,
+        backgroundColor: '#F0F0F0',
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    mapPlaceholderText: {
+        color: '#999',
+        fontFamily: Fonts.regular,
     },
 });

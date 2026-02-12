@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useFavoritesContext } from '@/context/FavoritesContext';
+import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/database.types';
+import { useEffect, useState } from 'react';
 
 type Restaurant = Database['public']['Tables']['restaurants']['Row'];
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -36,7 +36,7 @@ export function useFavorites() {
     } = useFavoritesContext();
 
     const [favoriteRestaurants, setFavoriteRestaurants] = useState<RestaurantWithRating[]>([]);
-    const [favoriteContributors, setFavoriteContributors] = useState<Profile[]>([]);
+    const [favoriteContributors, setFavoriteContributors] = useState<(Profile & { reviews?: { count: number }[] })[]>([]);
     const [loading, setLoading] = useState(true);
 
     const getImageForCuisine = (foodTypes: string[] | null): string => {
@@ -91,11 +91,11 @@ export function useFavorites() {
             if (favoriteContributorIds.length > 0) {
                 const { data: contributors, error: fetchContribError } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('*, reviews(count)')
                     .in('id', favoriteContributorIds);
 
                 if (fetchContribError) throw fetchContribError;
-                setFavoriteContributors(contributors || []);
+                setFavoriteContributors(contributors as any || []);
             } else {
                 setFavoriteContributors([]);
             }

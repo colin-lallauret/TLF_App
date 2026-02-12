@@ -1,0 +1,5 @@
+# Backups de la base de données
+*.sql
+*.sql.gz
+*.json
+!README.md

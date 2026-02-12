@@ -1,8 +1,8 @@
-import React from 'react';
-import { StyleSheet, View, Text, Platform } from 'react-native';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import MapView, { Callout, Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps';
 
 // Toulon coordinates
 const INITIAL_REGION = {
@@ -59,7 +59,7 @@ export const RestaurantMap = ({ restaurants }: RestaurantMapProps) => {
 
 const styles = StyleSheet.create({
     container: {
-        height: 350,
+        height: 500, // Increased to match design mockup
         width: '100%',
         borderRadius: 15,
         overflow: 'hidden',
