@@ -1,17 +1,18 @@
 import { ContributorCard } from '@/components/ContributorCard';
 import { RestaurantCard } from '@/components/RestaurantCard';
-import { Colors, Fonts } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useFavorites } from '@/hooks/useFavorites';
-import { useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function FavorisScreen() {
     const { favoriteRestaurants, favoriteContributors, loading, refreshFavorites } = useFavorites();
     const { toggleRestaurantFavorite, toggleContributorFavorite } = useFavoriteIds();
+    const router = useRouter();
 
-    // Rafraîchir les données quand l'écran devient actif
     useFocusEffect(
         useCallback(() => {
             refreshFavorites();
@@ -21,7 +22,7 @@ export default function FavorisScreen() {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.light.primary} />
+                <ActivityIndicator size="large" color="#D34C26" />
             </View>
         );
     }
@@ -30,18 +31,24 @@ export default function FavorisScreen() {
         <ScrollView
             style={styles.container}
             refreshControl={
-                <RefreshControl refreshing={loading} onRefresh={refreshFavorites} tintColor={Colors.light.primary} />
+                <RefreshControl refreshing={loading} onRefresh={refreshFavorites} tintColor="#D34C26" />
             }
         >
             <View style={styles.header}>
-                <Text style={styles.title}>Mes Favoris ❤️</Text>
-                <Text style={styles.subtitle}>Retrouvez vos coups de cœur</Text>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Mes favoris</Text>
             </View>
 
             <View style={styles.content}>
                 {/* Section Contributeurs */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Contributeurs ({favoriteContributors.length})</Text>
+                    <TouchableOpacity style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Locaux</Text>
+                        <Ionicons name="chevron-forward" size={20} color="#141414" />
+                    </TouchableOpacity>
+
                     {favoriteContributors.length > 0 ? (
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
                             {favoriteContributors.map((contributor) => (
@@ -50,35 +57,39 @@ export default function FavorisScreen() {
                                     contributor={contributor}
                                     isFavorite={true}
                                     onToggleFavorite={toggleContributorFavorite}
+                                    variant="simple"
                                 />
                             ))}
                         </ScrollView>
                     ) : (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Aucun contributeur suivi.</Text>
+                            <Text style={styles.emptyText}>Aucun local favori</Text>
                         </View>
                     )}
                 </View>
 
                 {/* Section Restaurants */}
                 <View style={[styles.section, { marginBottom: 40 }]}>
-                    <Text style={styles.sectionTitle}>Restaurants ({favoriteRestaurants.length})</Text>
+                    <TouchableOpacity style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Adresses</Text>
+                        <Ionicons name="chevron-forward" size={20} color="#141414" />
+                    </TouchableOpacity>
+
                     {favoriteRestaurants.length > 0 ? (
-                        <View style={styles.cardsContainer}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
                             {favoriteRestaurants.map((restaurant) => (
-                                <View key={restaurant.id} style={styles.cardWrapper}>
-                                    <RestaurantCard
-                                        restaurant={restaurant}
-                                        isFavorite={true}
-                                        onToggleFavorite={toggleRestaurantFavorite}
-                                    />
-                                </View>
+                                <RestaurantCard
+                                    key={restaurant.id}
+                                    restaurant={restaurant}
+                                    isFavorite={true}
+                                    onToggleFavorite={toggleRestaurantFavorite}
+                                    variant="simple"
+                                />
                             ))}
-                        </View>
+                        </ScrollView>
                     ) : (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Aucun restaurant favori pour le moment.</Text>
-                            <Text style={styles.emptySubText}>Explorez pour en ajouter !</Text>
+                            <Text style={styles.emptyText}>Aucune adresse favorite</Text>
                         </View>
                     )}
                 </View>
@@ -90,78 +101,64 @@ export default function FavorisScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.light.beige,
+        backgroundColor: '#FFFDF6', // Light cream background from screenshot
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: Colors.light.beige,
+        backgroundColor: '#FFFDF6',
     },
     header: {
-        padding: 20,
+        paddingHorizontal: 20,
         paddingTop: 60,
-        backgroundColor: Colors.light.primary,
+        paddingBottom: 20,
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628', // Red/Orange color from screenshot
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
     },
     title: {
-        fontSize: 28,
-        fontFamily: Fonts.bold,
-        color: '#FFFFFF',
-        marginBottom: 4,
-    },
-    subtitle: {
-        fontSize: 16,
-        fontFamily: Fonts.medium,
-        color: '#FFFFFF',
-        opacity: 0.9,
+        fontSize: 32,
+        fontFamily: Fonts.bold, // Assuming bold font
+        color: '#1A1A1A',
+        letterSpacing: -0.5,
     },
     content: {
         paddingBottom: 20,
     },
     section: {
-        marginTop: 24,
+        marginBottom: 30,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        marginBottom: 16,
+        gap: 4,
     },
     sectionTitle: {
-        fontSize: 20,
+        fontSize: 22,
         fontFamily: Fonts.bold,
-        color: Colors.light.text,
-        marginBottom: 16,
-        paddingHorizontal: 20,
-    },
-    cardsContainer: {
-        paddingHorizontal: 20,
-        gap: 16,
-        alignItems: 'center', // Centre les cartes si elles ont une largeur fixe
-    },
-    cardWrapper: {
-        marginBottom: 12,
+        color: '#1A1A1A',
     },
     horizontalScroll: {
-        paddingLeft: 20,
-        paddingRight: 20,
+        paddingHorizontal: 20,
+        gap: 16,
     },
     emptyContainer: {
-        padding: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#FFFFFF',
+        padding: 20,
         marginHorizontal: 20,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderStyle: 'dashed',
+        alignItems: 'center',
     },
     emptyText: {
-        color: Colors.light.text,
+        color: '#999',
         fontSize: 16,
         fontFamily: Fonts.medium,
-        textAlign: 'center',
-    },
-    emptySubText: {
-        color: Colors.light.icon,
-        fontSize: 14,
-        fontFamily: Fonts.regular,
-        marginTop: 4,
-        textAlign: 'center',
     },
 });

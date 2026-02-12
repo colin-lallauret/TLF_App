@@ -10,9 +10,10 @@ interface RestaurantCardProps {
     restaurant: RestaurantWithRating;
     isFavorite?: boolean;
     onToggleFavorite?: (id: string) => void;
+    variant?: 'default' | 'simple';
 }
 
-export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = false, onToggleFavorite }: RestaurantCardProps) {
+export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = false, onToggleFavorite, variant = 'default' }: RestaurantCardProps) {
     const router = useRouter();
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
@@ -40,10 +41,13 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
     };
     const getDistanceLabel = () => '2 km'; // Mock distance
 
+    const isSimple = variant === 'simple';
+
     return (
         <Pressable
             style={({ pressed }) => [
                 styles.card,
+                isSimple && styles.simpleCard,
                 pressed && styles.cardPressed
             ]}
             onPress={handlePress}
@@ -63,46 +67,51 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                     <Ionicons
                         name={isFavorite ? "heart" : "heart-outline"}
                         size={24}
-                        color="#FFF"
+                        color={isSimple ? "#D34C26" : "#FFF"} // Red heart on simple card per screenshot, or maybe white? Screenshot shows RED outline/fill on simple card? No, screenshot shows RED heart on FAVORITES page.
+                    // Actually screenshot shows a FILLED RED heart in top right of image for the favorites cards.
                     />
                 </TouchableOpacity>
 
-                <View style={styles.badgesContainer}>
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{getCuisineLabel()}</Text>
-                        <Ionicons name="earth" size={10} color="#FFF" style={styles.badgeIcon} />
+                {!isSimple && (
+                    <View style={styles.badgesContainer}>
+                        <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{getCuisineLabel()}</Text>
+                            <Ionicons name="earth" size={10} color="#FFF" style={styles.badgeIcon} />
+                        </View>
+                        <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{getPriceLabel()}</Text>
+                            <Ionicons name="cash-outline" size={10} color="#FFF" style={styles.badgeIcon} />
+                        </View>
+                        <View style={styles.badge}>
+                            <Text style={styles.badgeText}>{getDistanceLabel()}</Text>
+                            <Ionicons name="location-outline" size={10} color="#FFF" style={styles.badgeIcon} />
+                        </View>
                     </View>
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{getPriceLabel()}</Text>
-                        <Ionicons name="cash-outline" size={10} color="#FFF" style={styles.badgeIcon} />
-                    </View>
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>{getDistanceLabel()}</Text>
-                        <Ionicons name="location-outline" size={10} color="#FFF" style={styles.badgeIcon} />
-                    </View>
-                </View>
+                )}
             </View>
 
             <View style={styles.content}>
                 <View style={styles.row}>
-                    <Text style={styles.name} numberOfLines={1}>{restaurant.name}</Text>
-                    <Ionicons name="flame" size={18} color="#FF4500" />
+                    <Text style={[styles.name, isSimple && styles.simpleName]} numberOfLines={2}>{restaurant.name}</Text>
+                    {!isSimple && <Ionicons name="flame" size={18} color="#FF4500" />}
                 </View>
 
-                <View style={styles.ratingRow}>
-                    <Text style={styles.rating}>{restaurant.average_rating || '-'}</Text>
-                    <View style={styles.stars}>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                            <Ionicons
-                                key={star}
-                                name={star <= Math.round(restaurant.average_rating || 0) ? "star" : "star-outline"}
-                                size={12}
-                                color="#FF4500"
-                            />
-                        ))}
+                {!isSimple && (
+                    <View style={styles.ratingRow}>
+                        <Text style={styles.rating}>{restaurant.average_rating || '-'}</Text>
+                        <View style={styles.stars}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <Ionicons
+                                    key={star}
+                                    name={star <= Math.round(restaurant.average_rating || 0) ? "star" : "star-outline"}
+                                    size={12}
+                                    color="#FF4500"
+                                />
+                            ))}
+                        </View>
+                        <Text style={styles.reviewCount}>({restaurant.review_count || 13})</Text>
                     </View>
-                    <Text style={styles.reviewCount}>({restaurant.review_count || 13})</Text>
-                </View>
+                )}
             </View>
         </Pressable>
     );
@@ -116,6 +125,19 @@ const styles = StyleSheet.create({
         marginRight: 16,
         paddingBottom: 5,
         // No shadow/elevation in screenshot for the card itself, it seems flat on the bg
+    },
+    simpleCard: {
+        width: 160, // Smaller width for simple cards if needed, or keep 250? Screenshot shows 2 columns maybe? No, "Locaux" is horizontal list. "Adresses" is also horizontal list? Screenshot shows partial next card.
+        // Let's assume uniform width for simpler cards, maybe slightly narrower than the "featured" ones. 
+        // But for "simple" variant, let's stick to a width that fits the design. Screenshot shows cards around 150-160px width relative to screen.
+        // Actually, let's keep it flexible or use style override if passed, but for now specific width.
+        // The original code had 250. 
+        // Let's make it 160 for simple variant?
+        backgroundColor: 'transparent', // On favorites page, cards seem to have no background color itself or blend in? OR white?
+        // Screenshot shows simple off-white or just image and text. Text is on the background page color?
+        // Wait, looking at screenshot again: The cards have a background color! It's a light beige/cream card background, slightly distinct from the main background?
+        // Actually it looks like the card HAS a background '#FFF8E7' or similar (very light cream).
+        // Let's stick to transparent or matching background if simple.
     },
     cardPressed: {
         opacity: 0.9,
@@ -177,6 +199,13 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.bold,
         color: '#141414',
         flex: 1,
+    },
+    simpleName: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: '#141414',
+        flex: 1,
+        lineHeight: 18,
     },
     ratingRow: {
         flexDirection: 'row',

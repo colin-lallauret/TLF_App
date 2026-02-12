@@ -12,9 +12,10 @@ interface ContributorCardProps {
     contributor: Profile;
     isFavorite?: boolean;
     onToggleFavorite?: (id: string) => void;
+    variant?: 'default' | 'simple';
 }
 
-export function ContributorCard({ contributor, isFavorite: initialIsFavorite = false, onToggleFavorite }: ContributorCardProps) {
+export function ContributorCard({ contributor, isFavorite: initialIsFavorite = false, onToggleFavorite, variant = 'default' }: ContributorCardProps) {
     const router = useRouter();
     const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
@@ -49,6 +50,8 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
     // Placeholder data for stats if not available in profile
     const contributionCount = 13; // This would typically come from a joined query or aggregate
 
+    const isSimple = variant === 'simple';
+
     return (
         <Pressable
             style={({ pressed }) => [
@@ -69,11 +72,21 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
                     onPress={handleFavoritePress}
                     activeOpacity={0.7}
                 >
-                    <Ionicons
-                        name={isFavorite ? "heart" : "heart-outline"}
-                        size={20}
-                        color="#Ffffff" // White outline/fill as per screenshot usually, or maybe white outline? Screenshot shows white heart outline.
-                    />
+                    {isSimple ? (
+                        <Ionicons
+                            name={isFavorite ? "heart" : "heart-outline"}
+                            size={20}
+                            color="#D34C26" // Red for simple card to match RestaurantCard simple style
+                        />
+                    ) : (
+                        <View style={styles.favoriteIconBackground}>
+                            <Ionicons
+                                name={isFavorite ? "heart" : "heart-outline"}
+                                size={14}
+                                color={isFavorite ? Colors.light.primary : Colors.light.icon}
+                            />
+                        </View>
+                    )}
                 </TouchableOpacity>
             </View>
 
@@ -83,10 +96,12 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
                     {last ? <Text style={styles.lastName} numberOfLines={1}>{last}</Text> : null}
                 </View>
 
-                <View style={styles.statsContainer}>
-                    <Ionicons name="restaurant-outline" size={14} color={Colors.light.primary} />
-                    <Text style={styles.statsText}>{contributionCount}</Text>
-                </View>
+                {!isSimple && (
+                    <View style={styles.statsContainer}>
+                        <Ionicons name="restaurant-outline" size={14} color={Colors.light.primary} />
+                        <Text style={styles.statsText}>{contributionCount}</Text>
+                    </View>
+                )}
             </View>
         </Pressable>
     );
@@ -123,6 +138,19 @@ const styles = StyleSheet.create({
         top: 8,
         right: 8,
         zIndex: 10,
+    },
+    favoriteIconBackground: {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 15,
+        width: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
     },
     infoContainer: {
         padding: 12,
