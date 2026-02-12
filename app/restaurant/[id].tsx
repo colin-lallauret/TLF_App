@@ -102,7 +102,11 @@ export default function RestaurantDetailsScreen() {
         <View style={{ flex: 1 }}>
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
                 <Stack.Screen options={{
-                    headerShown: false
+                    headerShown: false,
+                    gestureEnabled: true,
+                    gestureDirection: 'horizontal',
+                    animation: 'slide_from_right',
+                    fullScreenGestureEnabled: false, // Retour au standard (bord gauche uniquement) car pas de "milieu" natif possible
                 }} />
 
                 {/* Header with gradient and favorite button (back button moved outside) */}
@@ -115,10 +119,10 @@ export default function RestaurantDetailsScreen() {
                         style={styles.favoriteButton}
                         onPress={() => restaurant && toggleRestaurantFavorite(restaurant.id)}
                     >
-                        <Image
-                            source={isFavorite ? require('@/assets/icons/liked_black.svg') : require('@/assets/icons/like_black.svg')}
-                            style={{ width: 28, height: 28 }}
-                            contentFit="contain"
+                        <Ionicons
+                            name={isFavorite ? "heart" : "heart-outline"}
+                            size={28}
+                            color={isFavorite ? "#E65127" : "#1A1A1A"}
                         />
                     </TouchableOpacity>
                 </LinearGradient>
@@ -272,21 +276,36 @@ export default function RestaurantDetailsScreen() {
                                             </View>
 
                                             {/* Rating */}
+                                            {/* Rating */}
                                             <View style={styles.reviewRating}>
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <Ionicons
-                                                        key={star}
-                                                        name={star <= review.rating ? "star" : "star-outline"}
-                                                        size={16}
-                                                        color="#E54628"
-                                                    />
-                                                ))}
+                                                {[1, 2, 3, 4, 5].map((star) => {
+                                                    let iconSource;
+                                                    const rating = review.rating || 0;
+                                                    if (star <= rating) {
+                                                        iconSource = require('@/assets/icons/star_full.png');
+                                                    } else if (star - 0.5 <= rating) {
+                                                        iconSource = require('@/assets/icons/star_semi_full.png');
+                                                    } else {
+                                                        iconSource = require('@/assets/icons/star_empty.png');
+                                                    }
+
+                                                    return (
+                                                        <Image
+                                                            key={star}
+                                                            source={iconSource}
+                                                            style={{ width: 16, height: 16 }}
+                                                            contentFit="contain"
+                                                        />
+                                                    );
+                                                })}
                                             </View>
 
                                             {/* Review Title */}
-                                            {review.title && (
-                                                <Text style={styles.reviewTitle}>{review.title}</Text>
-                                            )}
+                                            {
+                                                review.title && (
+                                                    <Text style={styles.reviewTitle}>{review.title}</Text>
+                                                )
+                                            }
 
                                             {/* Review Text */}
                                             <Text style={styles.reviewText} numberOfLines={3}>
@@ -298,7 +317,7 @@ export default function RestaurantDetailsScreen() {
                                                 style={styles.messageButton}
                                                 onPress={() => router.push(`/contributor/${review.contributor.id}` as any)}
                                             >
-                                                <Text style={styles.messageButtonText}>Envoyer un message</Text>
+                                                <Text style={styles.messageButtonText}>En savoir plus</Text>
                                                 <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
                                             </TouchableOpacity>
                                         </View>
@@ -323,15 +342,16 @@ export default function RestaurantDetailsScreen() {
                         </View>
                     )}
                 </View>
-            </ScrollView>
+            </ScrollView >
 
             {/* Fixed back button */}
-            <TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()}>
+            < TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()
+            }>
                 <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-            </TouchableOpacity>
+            </TouchableOpacity >
 
             <TabBar />
-        </View>
+        </View >
     );
 }
 
@@ -662,6 +682,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 8,
         justifyContent: 'center', // Center the tags
+        paddingHorizontal: 20,
     },
     infoTag: {
         backgroundColor: '#2D7A3E',

@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/theme'; // Assurez-vous que ce chemin est correct
 import { useSouvenirs } from '@/hooks/useSouvenirs';
 import { Ionicons } from '@expo/vector-icons'; // Assurez-vous d'avoir @expo/vector-icons
+import DateTimePicker from '@react-native-community/datetimepicker'; // Import ajouté
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -9,6 +10,7 @@ import {
     Alert,
     FlatList,
     Image,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -30,6 +32,7 @@ export default function AddSouvenirScreen() {
     const [description, setDescription] = useState('');
     const [rating, setRating] = useState(5);
     const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [photos, setPhotos] = useState<string[]>([]);
     const [searching, setSearching] = useState(false);
 
@@ -176,8 +179,8 @@ export default function AddSouvenirScreen() {
                         {[1, 2, 3, 4, 5].map((star) => (
                             <TouchableOpacity key={star} onPress={() => setRating(star)}>
                                 <Image
-                                    source={star <= rating ? require('@/assets/icons/star_full.svg') : require('@/assets/icons/star_empty.svg')}
-                                    style={{ width: 32, height: 32 }}
+                                    source={star <= rating ? require('@/assets/icons/star_full.png') : require('@/assets/icons/star_empty.png')}
+                                    style={{ width: 26, height: 26 }}
                                     resizeMode="contain"
                                 />
                             </TouchableOpacity>
@@ -195,10 +198,40 @@ export default function AddSouvenirScreen() {
                     />
 
                     <Text style={styles.label}>Date</Text>
-                    {/* Simple Date Select for MVP */}
-                    <TouchableOpacity style={styles.dateButton} onPress={() => Alert.alert('Info', 'Sélecteur de date simplifié pour la démo (Aujourd\'hui)')}>
-                        <Text>{date.toLocaleDateString()}</Text>
-                    </TouchableOpacity>
+                    {Platform.OS === 'ios' ? (
+                        <View style={styles.datePickerContainer}>
+                            <DateTimePicker
+                                value={date}
+                                mode="date"
+                                display="default"
+                                onChange={(event, selectedDate) => {
+                                    const currentDate = selectedDate || date;
+                                    setDate(currentDate);
+                                }}
+                                maximumDate={new Date()}
+                            />
+                        </View>
+                    ) : (
+                        <>
+                            <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+                                <Text>{date.toLocaleDateString()}</Text>
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={date}
+                                    mode="date"
+                                    display="default"
+                                    onChange={(event, selectedDate) => {
+                                        setShowDatePicker(false);
+                                        if (selectedDate) {
+                                            setDate(selectedDate);
+                                        }
+                                    }}
+                                    maximumDate={new Date()}
+                                />
+                            )}
+                        </>
+                    )}
 
                     <Text style={styles.label}>Photos</Text>
                     <View style={styles.photosContainer}>
@@ -366,5 +399,9 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    datePickerContainer: {
+        alignItems: 'flex-start',
+        marginBottom: 20,
     },
 });

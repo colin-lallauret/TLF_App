@@ -65,7 +65,7 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                         activeOpacity={0.7}
                     >
                         <RNImage
-                            source={isFavorite ? require('@/assets/icons/liked.svg') : require('@/assets/icons/like.svg')}
+                            source={isFavorite ? require('@/assets/icons/like_full_orange.png') : require('@/assets/icons/like_empty.png')}
                             style={{ width: 24, height: 24 }}
                             resizeMode="contain"
                         />
@@ -98,22 +98,22 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                                 {[1, 2, 3, 4, 5].map((position) => {
                                     const rating = restaurant.average_rating || 0;
                                     const diff = rating - (position - 1);
-                                    let starIcon;
+                                    let iconSource;
 
                                     if (diff >= 1) {
-                                        starIcon = require('@/assets/icons/star_full.svg');
+                                        iconSource = require('@/assets/icons/star_full.png');
                                     } else if (diff >= 0.5) {
-                                        starIcon = require('@/assets/icons/star_semi_full.svg');
+                                        iconSource = require('@/assets/icons/star_semi_full.png');
                                     } else {
-                                        starIcon = require('@/assets/icons/star_empty.svg');
+                                        iconSource = require('@/assets/icons/star_empty.png');
                                     }
 
                                     return (
-                                        <RNImage
+                                        <Image
                                             key={position}
-                                            source={starIcon}
+                                            source={iconSource}
                                             style={{ width: 12, height: 12 }}
-                                            resizeMode="contain"
+                                            contentFit="contain"
                                         />
                                     );
                                 })}

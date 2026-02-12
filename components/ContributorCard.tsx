@@ -76,7 +76,7 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
                         activeOpacity={0.7}
                     >
                         <RNImage
-                            source={isFavorite ? require('@/assets/icons/liked.svg') : require('@/assets/icons/like.svg')}
+                            source={isFavorite ? require('@/assets/icons/like_full_orange.png') : require('@/assets/icons/like_empty.png')}
                             style={{ width: 24, height: 24 }}
                             resizeMode="contain"
                         />

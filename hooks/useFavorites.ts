@@ -50,7 +50,10 @@ export function useFavorites() {
 
     const fetchDetails = async () => {
         try {
-            setLoading(true);
+            // Ne pas afficher le loading si on a déjà des données (évite le flash)
+            if (favoriteRestaurants.length === 0 && favoriteContributors.length === 0) {
+                setLoading(true);
+            }
 
             // --- 1. Récupérer les détails des restaurants ---
             if (favoriteRestaurantIds.length > 0) {

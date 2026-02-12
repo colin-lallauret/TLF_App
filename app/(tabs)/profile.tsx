@@ -1,4 +1,5 @@
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { WaveShape } from '@/components/WaveShape';
 import { Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useSouvenirs } from '@/hooks/useSouvenirs';
@@ -6,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileScreen() {
     const { user, profile, signOut } = useAuth();
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const [mySouvenirs, setMySouvenirs] = useState<any[]>([]);
     const [filterType, setFilterType] = useState<'date' | 'note'>('date');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
     useFocusEffect(
         useCallback(() => {
@@ -53,11 +55,58 @@ export default function ProfileScreen() {
         return fullName;
     };
 
+    const toggleFilter = (type: 'date' | 'note') => {
+        if (filterType === type) {
+            setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+        } else {
+            setFilterType(type);
+            setSortOrder('desc');
+        }
+    };
+
+    const sortedSouvenirs = React.useMemo(() => {
+        return [...mySouvenirs].sort((a, b) => {
+            if (filterType === 'date') {
+                const dateA = new Date(a.created_at || 0).getTime();
+                const dateB = new Date(b.created_at || 0).getTime();
+                return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+            } else {
+                const noteA = a.rating || 0;
+                const noteB = b.rating || 0;
+                return sortOrder === 'asc' ? noteA - noteB : noteB - noteA;
+            }
+        });
+    }, [mySouvenirs, filterType, sortOrder]);
+
+    const handleBadgePress = () => {
+        if (!isPremium) {
+            Alert.alert("Statut", "Vous n'êtes pas encore membre TLF+.");
+            return;
+        }
+
+        const endDate = new Date(profile?.subscription_end_date || '');
+        const today = new Date();
+        const diffTime = endDate.getTime() - today.getTime();
+        const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const formattedDate = endDate.toLocaleDateString('fr-FR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        Alert.alert(
+            "Abonnement TLF+",
+            `Il vous reste ${daysRemaining} jours.\nFin le ${formattedDate} (inclus).`,
+            [{ text: "OK" }]
+        );
+    };
+
     return (
         <ScrollView style={styles.container}>
             {/* Header with background image */}
             <ImageBackground
-                source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+                source={{ uri: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800' }}
                 style={styles.headerBackground}
                 imageStyle={styles.headerBackgroundImage}
             >
@@ -65,13 +114,15 @@ export default function ProfileScreen() {
 
                 {/* Settings icon */}
                 <TouchableOpacity style={styles.settingsButton} onPress={handleLogout}>
-                    <Ionicons name="settings-outline" size={24} color="#1A1A1A" />
+                    <Image
+                        source={require('@/assets/icons/settings.png')}
+                        style={{ width: 28, height: 28 }}
+                        contentFit="contain"
+                    />
                 </TouchableOpacity>
 
-                {/* Wave shape */}
-                <View style={styles.waveContainer}>
-                    <View style={styles.wave} />
-                </View>
+                {/* Wave shape (SVG) */}
+                <WaveShape />
             </ImageBackground>
 
             {/* Avatar and name section */}
@@ -89,15 +140,29 @@ export default function ProfileScreen() {
                 </View>
 
                 <Text style={styles.userName}>
-                    {formatName(profile?.full_name || null)}
+                    <Text style={{ fontFamily: Fonts.regular, fontWeight: 'normal' }}>
+                        {profile?.full_name?.split(' ').slice(0, -1).join(' ') || profile?.full_name?.split(' ')[0] || ''}
+                    </Text>
+                    {' '}
+                    <Text style={{ fontFamily: Fonts.bold, fontWeight: 'bold', fontSize: 22 }}>
+                        {profile?.full_name?.split(' ').slice(-1)[0]?.toUpperCase() || ''}
+                    </Text>
                 </Text>
 
-                {isPremium && (
-                    <View style={styles.badgeContainer}>
-                        <Ionicons name="add-circle" size={14} color="#FFF" />
-                        <Text style={styles.badge}>TLF+</Text>
-                    </View>
-                )}
+                <TouchableOpacity
+                    style={[styles.badgeContainer, { backgroundColor: isPremium ? '#00661D' : '#888' }]}
+                    onPress={handleBadgePress}
+                    activeOpacity={isPremium ? 0.7 : 1}
+                >
+                    {isPremium && (
+                        <Image
+                            source={require('@/assets/icons/logo_tlf_creme.png')}
+                            style={{ width: 14, height: 14, marginRight: 4 }}
+                            contentFit="contain"
+                        />
+                    )}
+                    <Text style={styles.badge}>{isPremium ? 'Membre' : 'Devenir membre'}</Text>
+                </TouchableOpacity>
             </View>
 
             {/* Content */}
@@ -126,33 +191,45 @@ export default function ProfileScreen() {
                 <View style={styles.filterContainer}>
                     <TouchableOpacity
                         style={[styles.filterButton, filterType === 'date' && styles.filterButtonActive]}
-                        onPress={() => setFilterType('date')}
+                        onPress={() => toggleFilter('date')}
                     >
-                        <Ionicons name="calendar-outline" size={16} color="#1A1A1A" />
+                        <Image
+                            source={filterType === 'date'
+                                ? (sortOrder === 'asc' ? require('@/assets/icons/filter_up.png') : require('@/assets/icons/filter_down.png'))
+                                : require('@/assets/icons/filter_down.png')}
+                            style={{ width: 16, height: 16, opacity: filterType === 'date' ? 1 : 0.5 }}
+                            contentFit="contain"
+                        />
                         <Text style={styles.filterButtonText}>Date</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.filterButton, filterType === 'note' && styles.filterButtonActive]}
-                        onPress={() => setFilterType('note')}
+                        onPress={() => toggleFilter('note')}
                     >
-                        <Ionicons name="star-outline" size={16} color="#1A1A1A" />
+                        <Image
+                            source={filterType === 'note'
+                                ? (sortOrder === 'asc' ? require('@/assets/icons/filter_up.png') : require('@/assets/icons/filter_down.png'))
+                                : require('@/assets/icons/filter_down.png')}
+                            style={{ width: 16, height: 16, opacity: filterType === 'note' ? 1 : 0.5 }}
+                            contentFit="contain"
+                        />
                         <Text style={styles.filterButtonText}>Note</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Souvenirs list */}
-                {mySouvenirs.length === 0 ? (
+                {sortedSouvenirs.length === 0 ? (
                     <View style={styles.placeholder}>
                         <Text style={styles.placeholderText}>
-                            Vos souvenirs de voyage apparaîtront ici
+                            Vos souvenirs apparaîtront ici
                         </Text>
                         <Text style={[styles.placeholderText, { marginTop: 10, fontSize: 12 }]}>
-                            Photos, notes et carnets de voyage
+                            Photos, notes et descriptions
                         </Text>
                     </View>
                 ) : (
                     <View style={styles.souvenirsList}>
-                        {mySouvenirs.map((souvenir, index) => (
+                        {sortedSouvenirs.map((souvenir, index) => (
                             <View key={souvenir.id || index} style={styles.souvenirCard}>
                                 {souvenir.photos_urls && souvenir.photos_urls[0] && (
                                     <Image source={{ uri: souvenir.photos_urls[0] }} style={styles.souvenirImage} contentFit="cover" />
@@ -206,38 +283,21 @@ const styles = StyleSheet.create({
     },
     headerOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(210, 180, 140, 0.3)', // Tan overlay
+        backgroundColor: 'rgba(230, 81, 39, 0.65)', // Strong Orange Overlay
     },
     settingsButton: {
         position: 'absolute',
-        top: 50,
+        top: 60,
         right: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#FFF',
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'transparent', // Transparent background
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 10,
     },
-    waveContainer: {
-        position: 'absolute',
-        bottom: -1,
-        left: 0,
-        right: 0,
-        height: 80,
-        overflow: 'hidden',
-    },
-    wave: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 80,
-        backgroundColor: '#FFFDF6',
-        borderTopLeftRadius: 50,
-        borderTopRightRadius: 50,
-    },
+
     profileSection: {
         alignItems: 'center',
         marginTop: -60,
@@ -250,8 +310,8 @@ const styles = StyleSheet.create({
         width: 120,
         height: 120,
         borderRadius: 60,
-        borderWidth: 4,
-        borderColor: '#FFF',
+        borderWidth: 6,
+        borderColor: '#FFFDF6',
     },
     avatarPlaceholder: {
         width: 120,
@@ -284,7 +344,7 @@ const styles = StyleSheet.create({
         gap: 4,
     },
     badge: {
-        color: '#FFFFFF',
+        color: '#fffcf5',
         fontFamily: Fonts.bold,
         fontSize: 12,
     },
@@ -325,7 +385,7 @@ const styles = StyleSheet.create({
     souvenirsSectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        gap: 6,
         marginBottom: 12,
     },
     sectionTitle: {
@@ -344,13 +404,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        backgroundColor: '#FFF',
         gap: 6,
     },
     filterButtonActive: {
-        backgroundColor: '#F0F0F0',
+        // backgroundColor: '#F0F0F0', // Removed background for active state too
     },
     filterButtonText: {
         fontSize: 14,
@@ -358,7 +415,7 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
     },
     placeholder: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#fffcf5',
         borderRadius: 20,
         padding: 60,
         alignItems: 'center',

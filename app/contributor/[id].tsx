@@ -17,10 +17,12 @@ export default function ContributorProfileScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { profile, loading, error } = useContributorProfile(id as string);
-    const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
+    const { favoriteRestaurantIds, favoriteContributorIds, toggleRestaurantFavorite, toggleContributorFavorite } = useFavoriteIds();
     const { startConversation } = useConversations();
     const [contacting, setContacting] = useState(false);
-    const [isFavorite, setIsFavorite] = useState(false);
+
+    // Dérivé de l'état global
+    const isFavorite = profile ? favoriteContributorIds.includes(profile.id) : false;
 
     const handleContact = async () => {
         if (!profile) return;
@@ -89,7 +91,11 @@ export default function ContributorProfileScreen() {
         <View style={{ flex: 1 }}>
             <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
                 <Stack.Screen options={{
-                    headerShown: false
+                    headerShown: false,
+                    gestureEnabled: true,
+                    gestureDirection: 'horizontal',
+                    animation: 'slide_from_right',
+                    fullScreenGestureEnabled: false,
                 }} />
 
                 {/* Header with gradient and favorite button (back button moved outside) */}
@@ -100,10 +106,10 @@ export default function ContributorProfileScreen() {
                     <View style={{ width: 40 }} />
                     <TouchableOpacity
                         style={styles.favoriteButton}
-                        onPress={() => setIsFavorite(!isFavorite)}
+                        onPress={() => profile && toggleContributorFavorite(profile.id)}
                     >
                         <Image
-                            source={isFavorite ? require('@/assets/icons/liked_black.svg') : require('@/assets/icons/like_black.svg')}
+                            source={isFavorite ? require('@/assets/icons/like_full_orange.png') : require('@/assets/icons/like_empty_black.png')}
                             style={{ width: 28, height: 28 }}
                             contentFit="contain"
                         />
@@ -165,10 +171,9 @@ export default function ContributorProfileScreen() {
                             <>
                                 <Text style={styles.contactButtonText}>Envoyer un message</Text>
                                 <Image
-                                    source={require('@/assets/icons/send_message.svg')}
+                                    source={require('@/assets/icons/send_message.png')}
                                     style={{ width: 20, height: 20 }}
                                     contentFit="contain"
-                                    tintColor="#FFF"
                                 />
                             </>
                         )}

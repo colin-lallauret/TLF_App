@@ -170,7 +170,7 @@ export default function ConversationScreen() {
                         disabled={!inputText.trim() || sending}
                         style={[styles.sendButton, (!inputText.trim() || sending) && styles.sendButtonDisabled]}
                     >
-                        <Text style={styles.sendButtonText}>Envoyer</Text>
+                        <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'ios' ? 10 : 60,
+        paddingTop: 110,
         paddingBottom: 20,
     },
     backButtonCircle: {
@@ -277,35 +277,36 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         flexDirection: 'row',
-        padding: 10,
-        backgroundColor: '#FFFFFF',
-        borderTopWidth: 1,
-        borderTopColor: '#EEEEEE',
-        alignItems: 'center',
+        padding: 12,
+        backgroundColor: 'transparent',
+        borderTopWidth: 0,
+        alignItems: 'center', // Centers input and button vertically
     },
     input: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
-        borderRadius: 20,
+        backgroundColor: '#F2F2F7', // iOS style grey
+        borderRadius: 22.5, // Match send button radius
         paddingHorizontal: 16,
-        paddingVertical: 10,
-        maxHeight: 100,
+        paddingVertical: 12, // Equal padding top/bottom for vertical center
+        minHeight: 45, // Match send button height
+        maxHeight: 120, // Slightly taller max height
         fontSize: 16,
-        marginRight: 10,
+        marginRight: 12,
+        color: '#000000',
     },
     sendButton: {
         backgroundColor: '#E65127',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 20,
+        width: 45,
+        height: 45,
+        borderRadius: 22.5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // marginBottom removed to align centers perfectly with alignItems: 'center'
     },
     sendButtonDisabled: {
-        backgroundColor: '#CCCCCC',
+        backgroundColor: '#E5E5EA', // iOS disabled grey
     },
-    sendButtonText: {
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-    },
+    // Removed old sendButtonText style as it's no longer used
     emptyContainer: {
         padding: 40,
         alignItems: 'center',

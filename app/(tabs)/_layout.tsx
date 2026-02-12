@@ -1,14 +1,13 @@
+import { TabBar } from '@/components/TabBar';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Image, Platform } from 'react-native';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Image } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
-  const Icon = ({ source, color, size = 28 }: { source: any; color: string; size?: number }) => (
+  const Icon = ({ source, color, size = 20 }: { source: any; color: string; size?: number }) => (
     <Image
       source={source}
       style={{ width: size, height: size, tintColor: color }}
@@ -18,24 +17,13 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={() => <TabBar />}
       screenOptions={{
         tabBarActiveTintColor: '#DC4928',
         tabBarInactiveTintColor: '#000000',
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarStyle: {
-          backgroundColor: '#FFFCF5', // Cream background
-          borderTopWidth: 0, // No border as per screenshot look? or maybe distinct. Let's keep it clean.
-          elevation: 0,
-          height: Platform.OS === 'ios' ? 90 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-          paddingTop: 10,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: 'Fustat_500Medium', // Assuming Fustat font is available
-          marginTop: 5,
-        },
+        // tabBarButton: HapticTab, // No longer needed as TabBar handles press
+        // TabBarStyle is handled by custom TabBar
       }}>
       <Tabs.Screen
         name="explorer"
@@ -55,7 +43,7 @@ export default function TabLayout() {
         name="decouvrir"
         options={{
           title: 'Découvrir',
-          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/decouvrir.svg')} color={color} size={32} />, // slightly larger icon usually
+          tabBarIcon: ({ color }) => <Icon source={require('@/assets/icons/decouvrir.svg')} color={color} size={24} />, // slightly larger icon usually
         }}
       />
       <Tabs.Screen
