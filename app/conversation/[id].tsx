@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
 import { supabase } from '@/lib/supabase';
@@ -14,10 +15,18 @@ export default function ConversationScreen() {
     const { id, name } = useLocalSearchParams();
     const router = useRouter();
     const { messages, loading, sendMessage } = useMessages(id as string);
-    const { user } = useAuth();
+    const { user, profile } = useAuth(); // Récupérer profile
     const [inputText, setInputText] = useState('');
     const [sending, setSending] = useState(false);
     const [otherParticipant, setOtherParticipant] = useState<any>(null);
+
+    const isMember = profile?.subscription_end_date
+        ? new Date(profile.subscription_end_date) > new Date()
+        : false;
+
+    const handleSubscribe = () => {
+        router.push('/(tabs)/profile');
+    };
 
     // Fetch conversation details to get other participant info
     useEffect(() => {
@@ -138,42 +147,61 @@ export default function ConversationScreen() {
                 <View style={{ width: 40 }} />
             </LinearGradient>
 
-            <FlatList
-                data={messages}
-                renderItem={renderMessage}
-                keyExtractor={(item) => item.id}
-                inverted
-                contentContainerStyle={styles.listContent}
-                ListEmptyComponent={
-                    !loading ? (
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Commencez la discussion ! 👋</Text>
-                        </View>
-                    ) : null
-                }
-            />
+            <View style={{ flex: 1 }}>
+                <FlatList
+                    data={messages}
+                    renderItem={renderMessage}
+                    keyExtractor={(item) => item.id}
+                    inverted
+                    contentContainerStyle={styles.listContent}
+                    scrollEnabled={isMember} // Désactiver le scroll
+                    ListEmptyComponent={
+                        !loading ? (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>Commencez la discussion ! 👋</Text>
+                            </View>
+                        ) : null
+                    }
+                />
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-            >
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        value={inputText}
-                        onChangeText={setInputText}
-                        placeholder="Écrivez un message..."
-                        multiline
-                    />
-                    <TouchableOpacity
-                        onPress={handleSend}
-                        disabled={!inputText.trim() || sending}
-                        style={[styles.sendButton, (!inputText.trim() || sending) && styles.sendButtonDisabled]}
-                    >
-                        <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+                >
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            value={inputText}
+                            onChangeText={setInputText}
+                            placeholder="Écrivez un message..."
+                            multiline
+                            editable={isMember} // Désactiver l'input
+                        />
+                        <TouchableOpacity
+                            onPress={handleSend}
+                            disabled={!inputText.trim() || sending || !isMember} // Désactiver le bouton
+                            style={[styles.sendButton, (!inputText.trim() || sending || !isMember) && styles.sendButtonDisabled]}
+                        >
+                            <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+                        </TouchableOpacity>
+                    </View>
+                </KeyboardAvoidingView>
+
+                {/* Overlay pour non-membres */}
+                {!isMember && (
+                    <View style={styles.overlay}>
+                        <View style={styles.alertBox}>
+                            <Text style={styles.alertTitle}>Messagerie privée</Text>
+                            <Text style={styles.alertMessage}>
+                                L'échange avec les contributeurs est réservé aux membres.
+                            </Text>
+                            <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+                                <Text style={styles.subscribeButtonText}>Choisir mon abonnement</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+            </View>
         </SafeAreaView>
     );
 }
@@ -314,5 +342,58 @@ const styles = StyleSheet.create({
     emptyText: {
         color: '#999999',
         fontStyle: 'italic',
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        zIndex: 2000,
+    },
+    alertBox: {
+        backgroundColor: '#FFF',
+        padding: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        width: '100%',
+        maxWidth: 340,
+        borderWidth: 1,
+        borderColor: '#EEE',
+    },
+    alertTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 10,
+    },
+    alertMessage: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 24,
+    },
+    subscribeButton: {
+        backgroundColor: Colors.light.primary,
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 30,
+        width: '100%',
+        alignItems: 'center',
+    },
+    subscribeButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

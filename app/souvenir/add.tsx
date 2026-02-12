@@ -1,7 +1,8 @@
-import { Colors } from '@/constants/theme'; // Assurez-vous que ce chemin est correct
+import { Colors } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
 import { useSouvenirs } from '@/hooks/useSouvenirs';
-import { Ionicons } from '@expo/vector-icons'; // Assurez-vous d'avoir @expo/vector-icons
-import DateTimePicker from '@react-native-community/datetimepicker'; // Import ajouté
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ import {
 } from 'react-native';
 
 export default function AddSouvenirScreen() {
+    const { profile } = useAuth();
     const router = useRouter();
     const { searchRestaurants, addSouvenir, uploading } = useSouvenirs();
 
@@ -35,6 +37,14 @@ export default function AddSouvenirScreen() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [photos, setPhotos] = useState<string[]>([]);
     const [searching, setSearching] = useState(false);
+
+    const isMember = profile?.subscription_end_date
+        ? new Date(profile.subscription_end_date) > new Date()
+        : false;
+
+    const handleSubscribe = () => {
+        router.push('/(tabs)/profile');
+    };
 
     // Recherche de restaurants (debounce)
     useEffect(() => {
@@ -58,7 +68,6 @@ export default function AddSouvenirScreen() {
     };
 
     const pickImage = async () => {
-        // Demander la permission
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
             Alert.alert('Permission refusée', 'Nous avons besoin de la permission pour accéder à vos photos.');
@@ -119,7 +128,7 @@ export default function AddSouvenirScreen() {
     };
 
     const renderRestaurantItem = ({ item }: { item: any }) => (
-        <TouchableOpacity style={styles.restaurantItem} onPress={() => handleSelectRestaurant(item)}>
+        <TouchableOpacity style={styles.restaurantItem} onPress={() => handleSelectRestaurant(item)} disabled={!isMember}>
             <Ionicons name="restaurant-outline" size={24} color={Colors.light.primary} />
             <View style={styles.restaurantInfo}>
                 <Text style={styles.restaurantName}>{item.name}</Text>
@@ -142,6 +151,7 @@ export default function AddSouvenirScreen() {
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         autoFocus
+                        editable={isMember}
                     />
                     {searching && <ActivityIndicator style={{ marginTop: 20 }} color={Colors.light.primary} />}
                     <FlatList
@@ -261,6 +271,20 @@ export default function AddSouvenirScreen() {
                     </TouchableOpacity>
                     <View style={{ height: 40 }} />
                 </ScrollView>
+            )}
+
+            {!isMember && (
+                <View style={styles.overlay}>
+                    <View style={styles.alertBox}>
+                        <Text style={styles.alertTitle}>Module Souvenirs</Text>
+                        <Text style={styles.alertMessage}>
+                            L'enregistrement de souvenirs est réservé aux membres. Devenez membre pour accéder à cette fonctionnalité.
+                        </Text>
+                        <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+                            <Text style={styles.subscribeButtonText}>Choisir mon abonnement</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             )}
         </View>
     );
@@ -403,5 +427,58 @@ const styles = StyleSheet.create({
     datePickerContainer: {
         alignItems: 'flex-start',
         marginBottom: 20,
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        zIndex: 2000,
+    },
+    alertBox: {
+        backgroundColor: '#FFF',
+        padding: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        width: '100%',
+        maxWidth: 340,
+        borderWidth: 1,
+        borderColor: '#EEE',
+    },
+    alertTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 10,
+    },
+    alertMessage: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 24,
+    },
+    subscribeButton: {
+        backgroundColor: Colors.light.primary,
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 30,
+        width: '100%',
+        alignItems: 'center',
+    },
+    subscribeButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });

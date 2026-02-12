@@ -1,4 +1,4 @@
-import { Fonts } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,9 +9,17 @@ import React from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MessageScreen() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth(); // Récupérer le profil aussi
     const router = useRouter();
     const { conversations, loading, refetch } = useConversations();
+
+    const isMember = profile?.subscription_end_date
+        ? new Date(profile.subscription_end_date) > new Date()
+        : false;
+
+    const handleSubscribe = () => {
+        router.push('/(tabs)/profile');
+    };
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -90,6 +98,7 @@ export default function MessageScreen() {
             <Pressable
                 style={({ pressed }) => [styles.conversationItem, pressed && styles.pressed]}
                 onPress={() => router.push(`/conversation/${item.id}` as any)}
+                disabled={!isMember} // Désactiver l'interaction si pas membre (optionnel avec l'overlay)
             >
                 <View style={styles.avatarContainer}>
                     {otherUser?.avatar_url ? (
@@ -147,6 +156,7 @@ export default function MessageScreen() {
                     contentContainerStyle={styles.listContent}
                     refreshing={loading}
                     onRefresh={refetch}
+                    scrollEnabled={isMember} // Désactiver le scroll si pas membre
                 />
             ) : (
                 <View style={styles.emptyContainer}>
@@ -162,6 +172,21 @@ export default function MessageScreen() {
             <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
                 <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
+
+            {/* Overlay pour non-membres */}
+            {!isMember && (
+                <View style={styles.overlay}>
+                    <View style={styles.alertBox}>
+                        <Text style={styles.alertTitle}>Messagerie privée</Text>
+                        <Text style={styles.alertMessage}>
+                            L'échange avec les contributeurs est réservé aux membres.
+                        </Text>
+                        <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+                            <Text style={styles.subscribeButtonText}>Choisir mon abonnement</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
@@ -330,5 +355,58 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontFamily: Fonts.bold,
         fontSize: 20,
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        zIndex: 2000,
+    },
+    alertBox: {
+        backgroundColor: '#FFF',
+        padding: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        width: '100%',
+        maxWidth: 340,
+        borderWidth: 1,
+        borderColor: '#EEE',
+    },
+    alertTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 10,
+    },
+    alertMessage: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 24,
+    },
+    subscribeButton: {
+        backgroundColor: Colors.light.primary,
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 30,
+        width: '100%',
+        alignItems: 'center',
+    },
+    subscribeButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
