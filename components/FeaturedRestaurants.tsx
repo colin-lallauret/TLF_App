@@ -87,13 +87,11 @@ const styles = StyleSheet.create({
         color: Colors.light.text,
     },
     scrollView: {
-        // Padding moved to contentContainerStyle to allow shadow clipping fix
+        overflow: 'visible',
     },
     scrollContent: {
         paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 32, // Increased to prevent shadow clipping
-        paddingBottom: 32,
+        paddingBottom: 20,
         gap: 20,
     },
     loadingContainer: {

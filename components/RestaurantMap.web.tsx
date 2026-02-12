@@ -1,6 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
 import { Colors } from '@/constants/theme';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface RestaurantMapProps {
     restaurants: any[];
@@ -24,7 +24,7 @@ export const RestaurantMap = ({ restaurants }: RestaurantMapProps) => {
 
 const styles = StyleSheet.create({
     container: {
-        height: 350,
+        height: 500,
         width: '100%',
         borderRadius: 15,
         backgroundColor: '#f8f9fa',

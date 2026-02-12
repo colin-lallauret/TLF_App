@@ -68,8 +68,8 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20, // Keep padding
-        marginBottom: 0,
+        paddingHorizontal: 20,
+        marginBottom: 12,
         marginTop: 10,
         gap: 4, // Gap between title and arrow
     },
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingHorizontal: 20,
-        paddingVertical: 20, // Space for shadow
+        paddingBottom: 20, // Space for shadow
         gap: 20,
     },
     loadingContainer: {

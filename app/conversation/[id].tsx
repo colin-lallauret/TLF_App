@@ -1,11 +1,14 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
+import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 export default function ConversationScreen() {
     const { id, name } = useLocalSearchParams();
@@ -14,6 +17,52 @@ export default function ConversationScreen() {
     const { user } = useAuth();
     const [inputText, setInputText] = useState('');
     const [sending, setSending] = useState(false);
+    const [otherParticipant, setOtherParticipant] = useState<any>(null);
+
+    // Fetch conversation details to get other participant info
+    useEffect(() => {
+        const fetchConversationDetails = async () => {
+            if (!id || !user) return;
+
+            console.log('Fetching conversation details for:', id);
+            console.log('Current user ID:', user.id);
+
+            // First, get the conversation
+            const { data: conversation, error: convError } = await supabase
+                .from('conversations')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            console.log('Conversation:', conversation);
+            console.log('Conversation error:', convError);
+
+            if (conversation && !convError) {
+                // Determine which participant is the other user
+                const otherUserId = (conversation as any).participant1_id === user.id
+                    ? (conversation as any).participant2_id
+                    : (conversation as any).participant1_id;
+
+                console.log('Other user ID:', otherUserId);
+
+                // Then fetch the other participant's profile
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', otherUserId)
+                    .single();
+
+                console.log('Other participant profile:', profile);
+                console.log('Profile error:', profileError);
+
+                if (profile && !profileError) {
+                    setOtherParticipant(profile);
+                }
+            }
+        };
+
+        fetchConversationDetails();
+    }, [id, user]);
 
     const handleSend = async () => {
         if (!inputText.trim()) return;
@@ -55,14 +104,37 @@ export default function ConversationScreen() {
                 headerShown: false
             }} />
 
-            {/* Header with back button only */}
+            {/* Header with back button, profile picture and name */}
             <LinearGradient
                 colors={['#E3E0CF', '#FFFCF5']}
                 style={styles.topButtons}
             >
+
                 <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
                     <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
                 </TouchableOpacity>
+
+                <View style={styles.headerInfo}>
+                    {otherParticipant?.avatar_url ? (
+                        <Image
+                            source={{ uri: otherParticipant.avatar_url }}
+                            style={styles.headerAvatar}
+                            contentFit="cover"
+                        />
+                    ) : (
+                        <View style={[styles.headerAvatar, styles.avatarPlaceholder]}>
+                            <Text style={styles.avatarInitials}>
+                                {otherParticipant ? (otherParticipant.full_name || otherParticipant.username || 'U').substring(0, 2).toUpperCase() : '...'}
+                            </Text>
+                        </View>
+                    )}
+                    <View style={styles.headerTextContainer}>
+                        <Text style={styles.headerName} numberOfLines={1}>
+                            {otherParticipant ? (otherParticipant.full_name || otherParticipant.username || 'Utilisateur') : 'Chargement...'}
+                        </Text>
+                    </View>
+                </View>
+
                 <View style={{ width: 40 }} />
             </LinearGradient>
 
@@ -126,6 +198,37 @@ const styles = StyleSheet.create({
         backgroundColor: '#E54628',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    headerInfo: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginLeft: 12,
+    },
+    headerAvatar: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E0E0E0',
+    },
+    avatarPlaceholder: {
+        backgroundColor: '#E54628',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarInitials: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    headerTextContainer: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    headerName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
     },
     listContent: {
         padding: 16,

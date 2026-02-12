@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     content: {
         paddingBottom: 20,
         zIndex: 1,
+        overflow: 'visible',
     },
     sectionHeader: {
         flexDirection: 'row',
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     mapContainer: {
-        height: 300,
+        height: 500,
         marginBottom: 20,
         overflow: 'hidden',
         borderRadius: 20, // Added border radius

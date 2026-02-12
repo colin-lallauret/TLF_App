@@ -6,7 +6,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MessageScreen() {
     const { user } = useAuth();
@@ -46,9 +46,7 @@ export default function MessageScreen() {
                     colors={['#E3E0CF', '#FFFCF5']}
                     style={styles.topButtons}
                 >
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButtonCircle}>
-                        <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
-                    </TouchableOpacity>
+                    <View style={{ width: 40 }} />
                 </LinearGradient>
                 <View style={styles.titleHeader}>
                     <Text style={styles.title}>Messages</Text>
@@ -62,6 +60,11 @@ export default function MessageScreen() {
                         <Text style={styles.loginButtonText}>Se connecter</Text>
                     </Pressable>
                 </View>
+
+                {/* Fixed back button */}
+                <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
             </View>
         );
     }
@@ -128,9 +131,7 @@ export default function MessageScreen() {
                 colors={['#E3E0CF', '#FFFCF5']}
                 style={styles.topButtons}
             >
-                <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
-                    <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-                </TouchableOpacity>
+                <View style={{ width: 40 }} />
                 <View style={{ width: 40 }} />
             </LinearGradient>
 
@@ -156,6 +157,11 @@ export default function MessageScreen() {
                     </Text>
                 </View>
             )}
+
+            {/* Fixed back button */}
+            <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
+                <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
         </View>
     );
 }
@@ -170,7 +176,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingTop: Platform.OS === 'ios' ? 10 : 60,
+        paddingTop: 110,
         paddingBottom: 10,
     },
     backButtonCircle: {
@@ -180,6 +186,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#E54628',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    fixedBackButton: {
+        position: 'absolute',
+        top: 60,
+        left: 20,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
     },
     titleHeader: {
         paddingHorizontal: 20,

@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#fffcf5',
         borderRadius: 30,
-        height: 60,
+        height: 70,
         paddingHorizontal: 16,
         borderWidth: 1,
         borderColor: '#EFEFEF',
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     },
     resultsContainer: {
         position: 'absolute',
-        top: 60,
+        top: 70,
         left: 20,
         right: 20,
         backgroundColor: '#FFFFFF',

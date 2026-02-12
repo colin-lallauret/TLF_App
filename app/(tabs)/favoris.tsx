@@ -29,74 +29,78 @@ export default function FavorisScreen() {
     }
 
     return (
-        <ScrollView
-            style={styles.container}
-            refreshControl={
-                <RefreshControl refreshing={loading} onRefresh={refreshFavorites} tintColor="#D34C26" />
-            }
-        >
-            <LinearGradient
-                colors={['#E3E0CF', '#FFFCF5']}
-                style={styles.header}
+        <View style={{ flex: 1 }}>
+            <ScrollView
+                style={styles.container}
+                refreshControl={
+                    <RefreshControl refreshing={loading} onRefresh={refreshFavorites} tintColor="#D34C26" />
+                }
             >
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Mes favoris</Text>
-            </LinearGradient>
+                <LinearGradient
+                    colors={['#E3E0CF', '#FFFCF5']}
+                    style={styles.header}
+                >
+                    <Text style={styles.title}>Mes favoris</Text>
+                </LinearGradient>
 
-            <View style={styles.content}>
-                {/* Section Contributeurs */}
-                <View style={styles.section}>
-                    <TouchableOpacity style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Locaux</Text>
-                        <Ionicons name="chevron-forward" size={16} color="#141414" />
-                    </TouchableOpacity>
+                <View style={styles.content}>
+                    {/* Section Contributeurs */}
+                    <View style={styles.section}>
+                        <TouchableOpacity style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Locaux</Text>
+                            <Ionicons name="chevron-forward" size={16} color="#141414" />
+                        </TouchableOpacity>
 
-                    {favoriteContributors.length > 0 ? (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-                            {favoriteContributors.map((contributor) => (
-                                <ContributorCard
-                                    key={contributor.id}
-                                    contributor={contributor}
-                                    isFavorite={true}
-                                    onToggleFavorite={toggleContributorFavorite}
-                                />
-                            ))}
-                        </ScrollView>
-                    ) : (
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Aucun local favori</Text>
-                        </View>
-                    )}
+                        {favoriteContributors.length > 0 ? (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+                                {favoriteContributors.map((contributor) => (
+                                    <ContributorCard
+                                        key={contributor.id}
+                                        contributor={contributor}
+                                        isFavorite={true}
+                                        onToggleFavorite={toggleContributorFavorite}
+                                    />
+                                ))}
+                            </ScrollView>
+                        ) : (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>Aucun local favori</Text>
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Section Restaurants */}
+                    <View style={[styles.section, { marginBottom: 40 }]}>
+                        <TouchableOpacity style={styles.sectionHeader}>
+                            <Text style={styles.sectionTitle}>Adresses</Text>
+                            <Ionicons name="chevron-forward" size={16} color="#141414" />
+                        </TouchableOpacity>
+
+                        {favoriteRestaurants.length > 0 ? (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+                                {favoriteRestaurants.map((restaurant) => (
+                                    <RestaurantCard
+                                        key={restaurant.id}
+                                        restaurant={restaurant}
+                                        isFavorite={true}
+                                        onToggleFavorite={toggleRestaurantFavorite}
+                                    />
+                                ))}
+                            </ScrollView>
+                        ) : (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>Aucune adresse favorite</Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
+            </ScrollView>
 
-                {/* Section Restaurants */}
-                <View style={[styles.section, { marginBottom: 40 }]}>
-                    <TouchableOpacity style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Adresses</Text>
-                        <Ionicons name="chevron-forward" size={16} color="#141414" />
-                    </TouchableOpacity>
-
-                    {favoriteRestaurants.length > 0 ? (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-                            {favoriteRestaurants.map((restaurant) => (
-                                <RestaurantCard
-                                    key={restaurant.id}
-                                    restaurant={restaurant}
-                                    isFavorite={true}
-                                    onToggleFavorite={toggleRestaurantFavorite}
-                                />
-                            ))}
-                        </ScrollView>
-                    ) : (
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Aucune adresse favorite</Text>
-                        </View>
-                    )}
-                </View>
-            </View>
-        </ScrollView>
+            {/* Fixed back button */}
+            <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
+                <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+        </View>
     );
 }
 
@@ -113,7 +117,7 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: 20,
-        paddingTop: 60,
+        paddingTop: 110,
         paddingBottom: 20,
     },
     backButton: {
@@ -124,6 +128,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 20,
+    },
+    fixedBackButton: {
+        position: 'absolute',
+        top: 60,
+        left: 20,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
     },
     title: {
         fontSize: 32,
