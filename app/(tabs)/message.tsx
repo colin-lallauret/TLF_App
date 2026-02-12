@@ -1,15 +1,16 @@
-import { Colors, Fonts } from '@/constants/theme';
+import { Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MessageScreen() {
-    const { conversations, loading, refetch } = useConversations();
     const { user } = useAuth();
     const router = useRouter();
+    const { conversations, loading, refetch } = useConversations();
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -26,10 +27,24 @@ export default function MessageScreen() {
         }
     };
 
+    const formatName = (fullName: string | null) => {
+        if (!fullName) return { first: 'Utilisateur', last: 'Inconnu' };
+        const parts = fullName.trim().split(' ');
+        if (parts.length > 1) {
+            const last = parts.pop()?.toUpperCase() || '';
+            const first = parts.join(' ');
+            return { first, last };
+        }
+        return { first: fullName, last: '' };
+    };
+
     if (!user) {
         return (
             <View style={styles.container}>
                 <View style={styles.header}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                        <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
                     <Text style={styles.title}>Messages</Text>
                 </View>
                 <View style={styles.emptyContainer}>
@@ -45,9 +60,22 @@ export default function MessageScreen() {
         );
     }
 
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#E54628" />
+            </View>
+        );
+    }
+
     const renderItem = ({ item }: { item: ConversationWithParticipant }) => {
         const otherUser = item.other_participant;
         const displayName = otherUser?.full_name || otherUser?.username || 'Utilisateur inconnu';
+        const { first, last } = formatName(displayName);
+
+        // Placeholder for unread count as it's not in the hook yet. 
+        // We act as if there are no new messages for now unless we fetch it.
+        const unreadCount = 0;
 
         return (
             <Pressable
@@ -58,7 +86,7 @@ export default function MessageScreen() {
                     {otherUser?.avatar_url ? (
                         <Image source={{ uri: otherUser.avatar_url }} style={styles.avatar} contentFit="cover" />
                     ) : (
-                        <View style={styles.avatarPlaceholder}>
+                        <View style={[styles.avatar, styles.avatarPlaceholder]}>
                             <Text style={styles.avatarInitials}>
                                 {displayName.substring(0, 2).toUpperCase()}
                             </Text>
@@ -67,29 +95,33 @@ export default function MessageScreen() {
                 </View>
 
                 <View style={styles.messageContent}>
-                    <View style={styles.messageHeader}>
-                        <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>
-                        <Text style={styles.time}>{formatDate(item.last_message_at)}</Text>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.nameText}>
+                            <Text style={styles.firstName}>{first} </Text>
+                            <Text style={styles.lastName}>{last}</Text>
+                        </Text>
+                        <Text style={styles.messageText} numberOfLines={1}>{item.last_message_text || 'Nouvelle conversation'}</Text>
                     </View>
-                    <Text style={styles.lastMessage} numberOfLines={1}>
-                        {item.last_message_text || 'Nouvelle conversation'}
-                    </Text>
+
+                    <View style={styles.metaContainer}>
+                        <Text style={styles.timeText}>{formatDate(item.last_message_at)}</Text>
+                        {unreadCount > 0 && (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{unreadCount}</Text>
+                            </View>
+                        )}
+                    </View>
                 </View>
             </Pressable>
         );
     };
 
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.light.primary} />
-            </View>
-        );
-    }
-
     return (
         <View style={styles.container}>
             <View style={styles.header}>
+                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
                 <Text style={styles.title}>Messages</Text>
             </View>
 
@@ -107,7 +139,7 @@ export default function MessageScreen() {
                     <Text style={styles.emptyIcon}>📬</Text>
                     <Text style={styles.emptyTitle}>Aucune conversation</Text>
                     <Text style={styles.emptyText}>
-                        Échangez avec les contributeurs locaux pour obtenir des conseils personnalisés.
+                        Lancez une discussion avec un local pour commencer !
                     </Text>
                 </View>
             )}
@@ -118,96 +150,104 @@ export default function MessageScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.light.background,
+        backgroundColor: '#FFFDF6', // Cream background
     },
     header: {
         paddingTop: 60,
         paddingHorizontal: 20,
         paddingBottom: 20,
-        backgroundColor: Colors.light.background,
-        borderBottomWidth: 1,
-        borderBottomColor: '#EEEEEE',
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628', // Red/Orange
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
     },
     title: {
         fontSize: 32,
         fontFamily: Fonts.bold,
-        color: Colors.light.text,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: Colors.light.background,
+        color: '#1A1A1A',
+        letterSpacing: -0.5,
     },
     listContent: {
-        padding: 20,
+        paddingHorizontal: 20,
     },
     conversationItem: {
         flexDirection: 'row',
-        padding: 16,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
         alignItems: 'center',
+        marginBottom: 24,
+        backgroundColor: 'transparent',
     },
     pressed: {
         opacity: 0.7,
-        backgroundColor: '#F5F5F5',
     },
     avatarContainer: {
         marginRight: 16,
     },
     avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         backgroundColor: '#E0E0E0',
-    },
-    avatarPlaceholder: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: Colors.light.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    avatarInitials: {
-        color: '#FFFFFF',
-        fontFamily: Fonts.bold,
-        fontSize: 18,
     },
     messageContent: {
         flex: 1,
-        justifyContent: 'center',
-    },
-    messageHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 4,
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
-    userName: {
-        fontSize: 16,
-        fontFamily: Fonts.bold,
-        color: Colors.light.text,
+    textContainer: {
         flex: 1,
-        marginRight: 8,
+        justifyContent: 'center',
     },
-    time: {
-        fontSize: 12,
-        color: '#999999',
-        fontFamily: Fonts.regular,
+    nameText: {
+        fontSize: 16,
+        color: '#1A1A1A',
+        marginBottom: 4,
     },
-    lastMessage: {
+    firstName: {
+        fontFamily: Fonts.medium,
+    },
+    lastName: {
+        fontFamily: Fonts.bold,
+    },
+    messageText: {
         fontSize: 14,
-        color: '#666666',
-        lineHeight: 20,
+        color: '#4A4A4A',
         fontFamily: Fonts.regular,
+    },
+    metaContainer: {
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        marginLeft: 8,
+        gap: 6,
+    },
+    timeText: {
+        fontSize: 12,
+        color: '#E54628', // Red/Orange for time
+        fontFamily: Fonts.medium,
+    },
+    badge: {
+        backgroundColor: '#1E5E2F', // Dark green badge
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    badgeText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontFamily: Fonts.bold,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFDF6',
     },
     emptyContainer: {
         flex: 1,
@@ -222,7 +262,7 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 20,
         fontFamily: Fonts.bold,
-        color: Colors.light.text,
+        color: '#1A1A1A',
         marginBottom: 10,
     },
     emptyText: {
@@ -234,7 +274,7 @@ const styles = StyleSheet.create({
     },
     loginButton: {
         marginTop: 20,
-        backgroundColor: Colors.light.primary,
+        backgroundColor: '#D34C26',
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 20,
@@ -243,5 +283,15 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontFamily: Fonts.bold,
-    }
+    },
+    avatarPlaceholder: {
+        backgroundColor: '#D34C26',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarInitials: {
+        color: '#FFFFFF',
+        fontFamily: Fonts.bold,
+        fontSize: 20,
+    },
 });
