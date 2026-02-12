@@ -125,10 +125,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     mapContainer: {
-        height: 350,
-        marginHorizontal: 20,
+        height: 500,
         marginBottom: 20,
-        borderRadius: 20,
         overflow: 'hidden',
     },
 });

@@ -1,12 +1,15 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ConversationScreen() {
     const { id, name } = useLocalSearchParams();
+    const router = useRouter();
     const { messages, loading, sendMessage } = useMessages(id as string);
     const { user } = useAuth();
     const [inputText, setInputText] = useState('');
@@ -48,7 +51,20 @@ export default function ConversationScreen() {
 
     return (
         <SafeAreaView style={styles.container} edges={['bottom']}>
-            <Stack.Screen options={{ title: (name as string) || 'Conversation' }} />
+            <Stack.Screen options={{
+                headerShown: false
+            }} />
+
+            {/* Header with back button only */}
+            <LinearGradient
+                colors={['#E3E0CF', '#FFFCF5']}
+                style={styles.topButtons}
+            >
+                <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <View style={{ width: 40 }} />
+            </LinearGradient>
 
             <FlatList
                 data={messages}
@@ -93,7 +109,23 @@ export default function ConversationScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF0',
+        backgroundColor: '#FFFDF6',
+    },
+    topButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'ios' ? 10 : 60,
+        paddingBottom: 20,
+    },
+    backButtonCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     listContent: {
         padding: 16,

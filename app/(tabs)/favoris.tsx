@@ -4,6 +4,7 @@ import { Fonts } from '@/constants/theme';
 import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useFavorites } from '@/hooks/useFavorites';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -34,19 +35,22 @@ export default function FavorisScreen() {
                 <RefreshControl refreshing={loading} onRefresh={refreshFavorites} tintColor="#D34C26" />
             }
         >
-            <View style={styles.header}>
+            <LinearGradient
+                colors={['#E3E0CF', '#FFFCF5']}
+                style={styles.header}
+            >
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                     <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Mes favoris</Text>
-            </View>
+            </LinearGradient>
 
             <View style={styles.content}>
                 {/* Section Contributeurs */}
                 <View style={styles.section}>
                     <TouchableOpacity style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Locaux</Text>
-                        <Ionicons name="chevron-forward" size={20} color="#141414" />
+                        <Ionicons name="chevron-forward" size={16} color="#141414" />
                     </TouchableOpacity>
 
                     {favoriteContributors.length > 0 ? (
@@ -57,7 +61,6 @@ export default function FavorisScreen() {
                                     contributor={contributor}
                                     isFavorite={true}
                                     onToggleFavorite={toggleContributorFavorite}
-                                    variant="simple"
                                 />
                             ))}
                         </ScrollView>
@@ -72,7 +75,7 @@ export default function FavorisScreen() {
                 <View style={[styles.section, { marginBottom: 40 }]}>
                     <TouchableOpacity style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Adresses</Text>
-                        <Ionicons name="chevron-forward" size={20} color="#141414" />
+                        <Ionicons name="chevron-forward" size={16} color="#141414" />
                     </TouchableOpacity>
 
                     {favoriteRestaurants.length > 0 ? (
@@ -83,7 +86,6 @@ export default function FavorisScreen() {
                                     restaurant={restaurant}
                                     isFavorite={true}
                                     onToggleFavorite={toggleRestaurantFavorite}
-                                    variant="simple"
                                 />
                             ))}
                         </ScrollView>
@@ -101,13 +103,13 @@ export default function FavorisScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF6', // Light cream background from screenshot
+        backgroundColor: '#FFFCF5',
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#FFFDF6',
+        backgroundColor: '#FFFCF5',
     },
     header: {
         paddingHorizontal: 20,
@@ -118,14 +120,14 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#E54628', // Red/Orange color from screenshot
+        backgroundColor: '#E54628',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 20,
     },
     title: {
         fontSize: 32,
-        fontFamily: Fonts.bold, // Assuming bold font
+        fontFamily: Fonts.bold,
         color: '#1A1A1A',
         letterSpacing: -0.5,
     },
@@ -133,13 +135,11 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
     },
     section: {
-        marginBottom: 30,
     },
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        marginBottom: 16,
         gap: 4,
     },
     sectionTitle: {
@@ -149,7 +149,8 @@ const styles = StyleSheet.create({
     },
     horizontalScroll: {
         paddingHorizontal: 20,
-        gap: 16,
+        paddingVertical: 20,
+        gap: 20,
     },
     emptyContainer: {
         padding: 20,

@@ -22,6 +22,21 @@ export const RestaurantMap = ({ restaurants }: RestaurantMapProps) => {
     // Vérifier si on a des restaus avec coordonnées
     const markers = restaurants.filter(r => r.lat && r.lng);
 
+    // Sur le web, afficher un message personnalisé
+    if (Platform.OS === 'web') {
+        return (
+            <View style={styles.container}>
+                <View style={styles.webFallback}>
+                    <Text style={styles.webFallbackTitle}>Carte indisponible sur la version web.</Text>
+                    <Text style={styles.webFallbackSubtitle}>
+                        Veuillez utiliser l'application mobile pour la carte interactive.
+                    </Text>
+                    <Text style={styles.webFallbackCount}>({markers.length} restaurants trouvés)</Text>
+                </View>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             <MapView
@@ -59,13 +74,9 @@ export const RestaurantMap = ({ restaurants }: RestaurantMapProps) => {
 
 const styles = StyleSheet.create({
     container: {
-        height: 500, // Increased to match design mockup
+        height: '100%',
         width: '100%',
-        borderRadius: 15,
         overflow: 'hidden',
-        marginVertical: 10,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
     },
     map: {
         width: '100%',
@@ -91,5 +102,35 @@ const styles = StyleSheet.create({
         color: Colors.light.primary,
         fontSize: 12,
         fontWeight: 'bold',
+    },
+    webFallback: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        padding: 40,
+        borderWidth: 2,
+        borderColor: Colors.light.primary,
+        borderStyle: 'dashed',
+    },
+    webFallbackTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    webFallbackSubtitle: {
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+        paddingHorizontal: 20,
+    },
+    webFallbackCount: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#999',
+        marginTop: 16,
     },
 });

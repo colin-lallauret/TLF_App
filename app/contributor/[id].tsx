@@ -3,6 +3,7 @@ import { Fonts } from '@/constants/theme';
 import { useContributorProfile } from '@/hooks/useContributorProfile';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -83,141 +84,156 @@ export default function ContributorProfileScreen() {
     };
 
     return (
-        <>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             <Stack.Screen options={{
                 headerShown: false
             }} />
-            <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-                {/* Header with back and favorite buttons */}
-                <View style={styles.topButtons}>
-                    <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
-                        <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.favoriteButton}
-                        onPress={() => setIsFavorite(!isFavorite)}
-                    >
-                        <Ionicons
-                            name={isFavorite ? "heart" : "heart-outline"}
-                            size={28}
-                            color={isFavorite ? "#E54628" : "#999"}
-                        />
-                    </TouchableOpacity>
-                </View>
 
-                {/* Profile Header */}
-                <View style={styles.header}>
-                    {/* Avatar */}
-                    <View style={styles.avatarContainer}>
-                        {profile.avatar_url ? (
-                            <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
-                        ) : (
-                            <View style={styles.avatarPlaceholder}>
-                                <Text style={styles.avatarInitials}>{getInitials(profile.full_name)}</Text>
-                            </View>
-                        )}
-                    </View>
+            {/* Header with back and favorite buttons (now scrolls with content) */}
+            <LinearGradient
+                colors={['#E3E0CF', '#FFFCF5']}
+                style={styles.topButtons}
+            >
+                <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={() => setIsFavorite(!isFavorite)}
+                >
+                    <Image
+                        source={isFavorite ? require('@/assets/icons/liked_black.svg') : require('@/assets/icons/like_black.svg')}
+                        style={{ width: 28, height: 28 }}
+                        contentFit="contain"
+                    />
+                </TouchableOpacity>
+            </LinearGradient>
 
-                    {/* Name */}
-                    <Text style={styles.name}>{formatName(profile.full_name)}</Text>
-
-                    {/* Bio */}
-                    {profile.bio && (
-                        <Text style={styles.bio}>{profile.bio}</Text>
-                    )}
-
-                    {/* Location */}
-                    <View style={styles.locationContainer}>
-                        <Ionicons name="location" size={18} color="#1A1A1A" />
-                        <Text style={styles.city}>{profile.city || 'Toulon'}</Text>
-                    </View>
-
-                    {/* Stats */}
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>{profile.stats.reviews_count || 122}</Text>
-                            <Text style={styles.statLabel}>Adresses</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>{profile.stats.followers_count || 67}</Text>
-                            <Text style={styles.statLabel}>Likes</Text>
-                        </View>
-                        <View style={styles.statItem}>
-                            <Text style={styles.statNumber}>{formatMemberSince(profile.created_at)}</Text>
-                            <Text style={styles.statLabel}>Membre depuis</Text>
-                        </View>
-                    </View>
-
-                    {/* Contact Button */}
-                    <TouchableOpacity
-                        style={[styles.contactButton, contacting && styles.contactButtonDisabled]}
-                        onPress={handleContact}
-                        disabled={contacting}
-                    >
-                        {contacting ? (
-                            <ActivityIndicator size="small" color="#FFFFFF" />
-                        ) : (
-                            <>
-                                <Text style={styles.contactButtonText}>Envoyer un message</Text>
-                                <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-                {/* Section Top Adresses */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>
-                            Mes tops adresses ({profile.top_restaurants?.length || 0})
-                        </Text>
-                        <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
-                    </View>
-                    {profile.top_restaurants && profile.top_restaurants.length > 0 ? (
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.scrollContent}
-                        >
-                            {profile.top_restaurants.map((restaurant) => (
-                                <RestaurantCard
-                                    key={restaurant.id}
-                                    restaurant={restaurant}
-                                    isFavorite={favoriteRestaurantIds.includes(restaurant.id)}
-                                    onToggleFavorite={toggleRestaurantFavorite}
-                                />
-                            ))}
-                        </ScrollView>
+            {/* Profile Header */}
+            <View style={styles.header}>
+                {/* Avatar */}
+                <View style={styles.avatarContainer}>
+                    {profile.avatar_url ? (
+                        <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
                     ) : (
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>Pas encore de recommandation top !</Text>
+                        <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarInitials}>{getInitials(profile.full_name)}</Text>
                         </View>
                     )}
                 </View>
 
-                {/* Carte Interactive Section */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Carte interactive</Text>
-                        <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
+                {/* Name */}
+                <Text style={styles.name}>{formatName(profile.full_name)}</Text>
+
+                {/* Bio */}
+                {profile.bio && (
+                    <Text style={styles.bio}>{profile.bio}</Text>
+                )}
+
+                {/* Location */}
+                <View style={styles.locationContainer}>
+                    <Ionicons name="location" size={18} color="#1A1A1A" />
+                    <Text style={styles.city}>{profile.city || 'Toulon'}</Text>
+                </View>
+
+                {/* Stats */}
+                <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statNumber}>{profile.stats.reviews_count || 122}</Text>
+                        <Text style={styles.statLabel}>Adresses</Text>
                     </View>
-                    {/* Map would go here */}
-                    <View style={styles.mapPlaceholder}>
-                        <Text style={styles.mapPlaceholderText}>Carte interactive</Text>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statNumber}>{profile.stats.followers_count || 67}</Text>
+                        <Text style={styles.statLabel}>Likes</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statNumber}>{formatMemberSince(profile.created_at)}</Text>
+                        <Text style={styles.statLabel}>Membre depuis</Text>
                     </View>
                 </View>
-            </ScrollView>
-        </>
+
+                {/* Contact Button */}
+                <TouchableOpacity
+                    style={[styles.contactButton, contacting && styles.contactButtonDisabled]}
+                    onPress={handleContact}
+                    disabled={contacting}
+                >
+                    {contacting ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <>
+                            <Text style={styles.contactButtonText}>Envoyer un message</Text>
+                            <Image
+                                source={require('@/assets/icons/send_message.svg')}
+                                style={{ width: 20, height: 20 }}
+                                contentFit="contain"
+                                tintColor="#FFF"
+                            />
+                        </>
+                    )}
+                </TouchableOpacity>
+            </View>
+
+            {/* Section Top Adresses */}
+            <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>
+                        Mes tops adresses ({profile.top_restaurants?.length || 0})
+                    </Text>
+                    <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
+                </View>
+                {profile.top_restaurants && profile.top_restaurants.length > 0 ? (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.scrollContent}
+                    >
+                        {profile.top_restaurants.map((restaurant) => (
+                            <RestaurantCard
+                                key={restaurant.id}
+                                restaurant={restaurant}
+                                isFavorite={favoriteRestaurantIds.includes(restaurant.id)}
+                                onToggleFavorite={toggleRestaurantFavorite}
+                            />
+                        ))}
+                    </ScrollView>
+                ) : (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>Pas encore de recommandation top !</Text>
+                    </View>
+                )}
+            </View>
+
+            {/* Carte Interactive Section */}
+            <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Carte interactive</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
+                </View>
+                {/* Map would go here */}
+                <View style={styles.mapPlaceholder}>
+                    <Text style={styles.mapPlaceholderText}>Carte interactive</Text>
+                </View>
+            </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF6', // Cream background
+        backgroundColor: '#FFFDF6',
     },
     contentContainer: {
         paddingBottom: 40,
+    },
+    topButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 60,
+        paddingBottom: 20,
     },
     loadingContainer: {
         flex: 1,
@@ -247,14 +263,6 @@ const styles = StyleSheet.create({
     backButtonText: {
         color: '#FFFFFF',
         fontFamily: Fonts.bold,
-    },
-    topButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 50,
-        paddingBottom: 20,
     },
     backButtonCircle: {
         width: 40,
@@ -350,7 +358,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#2D7A3E', // Green
+        backgroundColor: '#2D7A3E',
         paddingVertical: 12,
         paddingHorizontal: 24,
         borderRadius: 24,

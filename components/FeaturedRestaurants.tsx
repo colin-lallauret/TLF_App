@@ -84,11 +84,12 @@ const styles = StyleSheet.create({
         color: Colors.light.text,
     },
     scrollView: {
-        paddingLeft: 20,
+        // Padding moved to contentContainerStyle to allow shadow clipping fix
     },
     scrollContent: {
-        paddingRight: 20,
-        gap: 16, // Add gap between cards
+        paddingHorizontal: 20,
+        paddingVertical: 20, // Space for shadow
+        gap: 20,
     },
     loadingContainer: {
         alignItems: 'center',

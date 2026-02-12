@@ -1,19 +1,23 @@
 import { RestaurantMap } from '@/components/RestaurantMap';
 import { Fonts } from '@/constants/theme';
+import { useFavoriteIds } from '@/hooks/useFavoriteIds';
 import { useRestaurantDetails } from '@/hooks/useRestaurantDetails';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Linking, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function RestaurantDetailsScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { restaurant, loading, error } = useRestaurantDetails(id as string);
+    const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const isFavorite = restaurant ? favoriteRestaurantIds.includes(restaurant.id) : false;
 
     if (loading) {
         return (
@@ -68,214 +72,235 @@ export default function RestaurantDetailsScreen() {
     };
 
     return (
-        <>
+        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             <Stack.Screen options={{
                 headerShown: false
             }} />
-            <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-                {/* Image Carousel */}
-                <View style={styles.carouselContainer}>
-                    <ScrollView
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        onScroll={(e) => {
-                            const index = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
-                            setCurrentImageIndex(index);
-                        }}
-                        scrollEventThrottle={16}
-                    >
-                        {images.map((img, index) => (
-                            <Image
-                                key={index}
-                                source={{ uri: img }}
-                                style={styles.carouselImage}
-                                contentFit="cover"
-                            />
-                        ))}
-                    </ScrollView>
 
-                    {/* Back button overlay */}
-                    <TouchableOpacity style={styles.backButtonOverlay} onPress={() => router.back()}>
-                        <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-                    </TouchableOpacity>
+            {/* Header (now scrolls with content) */}
+            <LinearGradient
+                colors={['#E3E0CF', '#FFFCF5']}
+                style={styles.topButtons}
+            >
+                <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.favoriteButton}
+                    onPress={() => restaurant && toggleRestaurantFavorite(restaurant.id)}
+                >
+                    <Image
+                        source={isFavorite ? require('@/assets/icons/liked_black.svg') : require('@/assets/icons/like_black.svg')}
+                        style={{ width: 28, height: 28 }}
+                        contentFit="contain"
+                    />
+                </TouchableOpacity>
+            </LinearGradient>
+            {/* Image Carousel */}
+            <View style={styles.carouselContainer}>
+                <ScrollView
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
+                        setCurrentImageIndex(index);
+                    }}
+                    scrollEventThrottle={16}
+                >
+                    {images.map((img, index) => (
+                        <Image
+                            key={index}
+                            source={{ uri: img }}
+                            style={styles.carouselImage}
+                            contentFit="cover"
+                        />
+                    ))}
+                </ScrollView>
 
-                    {/* Pagination dots */}
-                    <View style={styles.paginationContainer}>
-                        {images.map((_, index) => (
-                            <View
-                                key={index}
-                                style={[
-                                    styles.paginationDot,
-                                    index === currentImageIndex && styles.paginationDotActive
-                                ]}
-                            />
-                        ))}
+                {/* Pagination dots */}
+                <View style={styles.paginationContainer}>
+                    {images.map((_, index) => (
+                        <View
+                            key={index}
+                            style={[
+                                styles.paginationDot,
+                                index === currentImageIndex && styles.paginationDotActive
+                            ]}
+                        />
+                    ))}
+                </View>
+            </View>
+
+            <View style={styles.content}>
+                {/* Restaurant Name */}
+                <Text style={styles.name}>{restaurant.name}</Text>
+
+                {/* Badges */}
+                <View style={styles.badgesContainer}>
+                    <View style={styles.badge}>
+                        <Ionicons name="earth" size={14} color="#FFF" />
+                        <Text style={styles.badgeText}>{getCuisineLabel()}</Text>
+                    </View>
+                    <View style={styles.badge}>
+                        <Ionicons name="cash-outline" size={14} color="#FFF" />
+                        <Text style={styles.badgeText}>{getPriceLabel()}</Text>
+                    </View>
+                    <View style={styles.badge}>
+                        <Ionicons name="location-outline" size={14} color="#FFF" />
+                        <Text style={styles.badgeText}>{getDistanceLabel()}</Text>
                     </View>
                 </View>
 
-                <View style={styles.content}>
-                    {/* Restaurant Name */}
-                    <Text style={styles.name}>{restaurant.name}</Text>
-
-                    {/* Badges */}
-                    <View style={styles.badgesContainer}>
-                        <View style={styles.badge}>
-                            <Ionicons name="earth" size={14} color="#FFF" />
-                            <Text style={styles.badgeText}>{getCuisineLabel()}</Text>
-                        </View>
-                        <View style={styles.badge}>
-                            <Ionicons name="cash-outline" size={14} color="#FFF" />
-                            <Text style={styles.badgeText}>{getPriceLabel()}</Text>
-                        </View>
-                        <View style={styles.badge}>
-                            <Ionicons name="location-outline" size={14} color="#FFF" />
-                            <Text style={styles.badgeText}>{getDistanceLabel()}</Text>
-                        </View>
+                {/* Address Section */}
+                <View style={styles.addressSection}>
+                    <View style={styles.addressHeader}>
+                        <Ionicons name="location" size={20} color="#1A1A1A" />
+                        <Text style={styles.addressTitle}>Adresse</Text>
                     </View>
+                    <Text style={styles.addressText}>
+                        {restaurant.address},{'\n'}
+                        {restaurant.postal_code} {restaurant.city},{'\n'}
+                        France
+                    </Text>
 
-                    {/* Address Section */}
-                    <View style={styles.addressSection}>
-                        <View style={styles.addressHeader}>
-                            <Ionicons name="location" size={20} color="#1A1A1A" />
-                            <Text style={styles.addressTitle}>Adresse</Text>
-                        </View>
-                        <Text style={styles.addressText}>
-                            {restaurant.address},{'\n'}
-                            {restaurant.postal_code} {restaurant.city},{'\n'}
-                            France
-                        </Text>
-
-                        {/* Map Icons */}
-                        <View style={styles.mapIconsContainer}>
-                            <TouchableOpacity style={styles.mapIcon} onPress={openGoogleMaps}>
-                                <Image
-                                    source={{ uri: 'https://cdn-icons-png.flaticon.com/512/281/281769.png' }}
-                                    style={styles.mapIconImage}
-                                    contentFit="contain"
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.mapIcon} onPress={openWaze}>
-                                <Image
-                                    source={{ uri: 'https://cdn-icons-png.flaticon.com/512/732/732244.png' }}
-                                    style={styles.mapIconImage}
-                                    contentFit="contain"
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.mapIcon} onPress={openAppleMaps}>
-                                <Image
-                                    source={{ uri: 'https://cdn-icons-png.flaticon.com/512/0/747.png' }}
-                                    style={styles.mapIconImage}
-                                    contentFit="contain"
-                                />
-                            </TouchableOpacity>
-                        </View>
+                    {/* Map Icons */}
+                    <View style={styles.mapIconsContainer}>
+                        <TouchableOpacity style={styles.mapIcon} onPress={openGoogleMaps}>
+                            <Image
+                                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/281/281769.png' }}
+                                style={styles.mapIconImage}
+                                contentFit="contain"
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.mapIcon} onPress={openWaze}>
+                            <Image
+                                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/732/732244.png' }}
+                                style={styles.mapIconImage}
+                                contentFit="contain"
+                            />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.mapIcon} onPress={openAppleMaps}>
+                            <Image
+                                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/0/747.png' }}
+                                style={styles.mapIconImage}
+                                contentFit="contain"
+                            />
+                        </TouchableOpacity>
                     </View>
+                </View>
 
-                    {/* Map Section */}
-                    {restaurant.lat && restaurant.lng && (
-                        <View style={styles.mapSection}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionTitle}>Carte interactive</Text>
-                                <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
-                            </View>
-                            <RestaurantMap restaurants={[restaurant]} />
-                        </View>
-                    )}
-
-                    {/* Reviews Section */}
-                    <View style={styles.reviewsSection}>
+                {/* Map Section */}
+                {restaurant.lat && restaurant.lng && (
+                    <View style={styles.mapSection}>
                         <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>
-                                Les avis ({restaurant.review_count || 0})
-                            </Text>
+                            <Text style={styles.sectionTitle}>Carte interactive</Text>
                             <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
                         </View>
+                        <RestaurantMap restaurants={[restaurant]} />
+                    </View>
+                )}
 
-                        {restaurant.reviews && restaurant.reviews.length > 0 ? (
-                            restaurant.reviews.map((review) => {
-                                const { first, last } = formatName(review.contributor.full_name);
-                                return (
-                                    <View key={review.id} style={styles.reviewCard}>
-                                        <View style={styles.reviewHeader}>
-                                            <View style={styles.reviewerInfo}>
-                                                {review.contributor.avatar_url ? (
-                                                    <Image
-                                                        source={{ uri: review.contributor.avatar_url }}
-                                                        style={styles.reviewerAvatar}
-                                                        contentFit="cover"
-                                                    />
-                                                ) : (
-                                                    <View style={styles.reviewerAvatarPlaceholder}>
-                                                        <Text style={styles.reviewerAvatarText}>
-                                                            {review.contributor.full_name?.charAt(0).toUpperCase() || 'U'}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                                <View style={styles.reviewerDetails}>
-                                                    <Text style={styles.reviewerName}>
-                                                        <Text style={styles.reviewerFirstName}>{first} </Text>
-                                                        <Text style={styles.reviewerLastName}>{last}</Text>
-                                                    </Text>
-                                                    <Text style={styles.reviewDate}>
-                                                        {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                {/* Reviews Section */}
+                <View style={styles.reviewsSection}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>
+                            Les avis ({restaurant.review_count || 0})
+                        </Text>
+                        <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
+                    </View>
+
+                    {restaurant.reviews && restaurant.reviews.length > 0 ? (
+                        restaurant.reviews.map((review) => {
+                            const { first, last } = formatName(review.contributor.full_name);
+                            return (
+                                <View key={review.id} style={styles.reviewCard}>
+                                    <View style={styles.reviewHeader}>
+                                        <View style={styles.reviewerInfo}>
+                                            {review.contributor.avatar_url ? (
+                                                <Image
+                                                    source={{ uri: review.contributor.avatar_url }}
+                                                    style={styles.reviewerAvatar}
+                                                    contentFit="cover"
+                                                />
+                                            ) : (
+                                                <View style={styles.reviewerAvatarPlaceholder}>
+                                                    <Text style={styles.reviewerAvatarText}>
+                                                        {review.contributor.full_name?.charAt(0).toUpperCase() || 'U'}
                                                     </Text>
                                                 </View>
+                                            )}
+                                            <View style={styles.reviewerDetails}>
+                                                <Text style={styles.reviewerName}>
+                                                    <Text style={styles.reviewerFirstName}>{first} </Text>
+                                                    <Text style={styles.reviewerLastName}>{last}</Text>
+                                                </Text>
+                                                <Text style={styles.reviewDate}>
+                                                    {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                                                </Text>
                                             </View>
                                         </View>
-
-                                        {/* Rating */}
-                                        <View style={styles.reviewRating}>
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <Ionicons
-                                                    key={star}
-                                                    name={star <= review.rating ? "star" : "star-outline"}
-                                                    size={16}
-                                                    color="#E54628"
-                                                />
-                                            ))}
-                                        </View>
-
-                                        {/* Review Title */}
-                                        {review.title && (
-                                            <Text style={styles.reviewTitle}>{review.title}</Text>
-                                        )}
-
-                                        {/* Review Text */}
-                                        <Text style={styles.reviewText} numberOfLines={3}>
-                                            {review.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
-                                        </Text>
-
-                                        {/* Message Button */}
-                                        <TouchableOpacity
-                                            style={styles.messageButton}
-                                            onPress={() => router.push(`/contributor/${review.contributor.id}` as any)}
-                                        >
-                                            <Text style={styles.messageButtonText}>Envoyer un message</Text>
-                                            <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
-                                        </TouchableOpacity>
                                     </View>
-                                );
-                            })
-                        ) : (
-                            <View style={styles.emptyReviews}>
-                                <Text style={styles.emptyText}>Pas encore d'avis pour ce restaurant.</Text>
-                            </View>
-                        )}
-                    </View>
+
+                                    {/* Rating */}
+                                    <View style={styles.reviewRating}>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Ionicons
+                                                key={star}
+                                                name={star <= review.rating ? "star" : "star-outline"}
+                                                size={16}
+                                                color="#E54628"
+                                            />
+                                        ))}
+                                    </View>
+
+                                    {/* Review Title */}
+                                    {review.title && (
+                                        <Text style={styles.reviewTitle}>{review.title}</Text>
+                                    )}
+
+                                    {/* Review Text */}
+                                    <Text style={styles.reviewText} numberOfLines={3}>
+                                        {review.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
+                                    </Text>
+
+                                    {/* Message Button */}
+                                    <TouchableOpacity
+                                        style={styles.messageButton}
+                                        onPress={() => router.push(`/contributor/${review.contributor.id}` as any)}
+                                    >
+                                        <Text style={styles.messageButtonText}>Envoyer un message</Text>
+                                        <Ionicons name="arrow-forward-circle" size={20} color="#FFF" />
+                                    </TouchableOpacity>
+                                </View>
+                            );
+                        })
+                    ) : (
+                        <View style={styles.emptyReviews}>
+                            <Text style={styles.emptyText}>Pas encore d'avis pour ce restaurant.</Text>
+                        </View>
+                    )}
                 </View>
-            </ScrollView>
-        </>
+            </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF6', // Cream background
+        backgroundColor: '#FFFDF6',
     },
     contentContainer: {
         paddingBottom: 40,
+    },
+    topButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 60,
+        paddingBottom: 20,
     },
     loadingContainer: {
         flex: 1,
@@ -306,6 +331,20 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontFamily: Fonts.bold,
     },
+    backButtonCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E54628',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    favoriteButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     carouselContainer: {
         height: 250,
         position: 'relative',
@@ -313,18 +352,6 @@ const styles = StyleSheet.create({
     carouselImage: {
         width: SCREEN_WIDTH,
         height: 250,
-    },
-    backButtonOverlay: {
-        position: 'absolute',
-        top: 50,
-        left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10,
     },
     paginationContainer: {
         position: 'absolute',
@@ -367,7 +394,7 @@ const styles = StyleSheet.create({
     badge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#2D7A3E', // Green
+        backgroundColor: '#2D7A3E',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 16,

@@ -3,9 +3,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MessageScreen() {
     const { user } = useAuth();
@@ -41,10 +42,15 @@ export default function MessageScreen() {
     if (!user) {
         return (
             <View style={styles.container}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                <LinearGradient
+                    colors={['#E3E0CF', '#FFFCF5']}
+                    style={styles.topButtons}
+                >
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backButtonCircle}>
                         <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
+                </LinearGradient>
+                <View style={styles.titleHeader}>
                     <Text style={styles.title}>Messages</Text>
                 </View>
                 <View style={styles.emptyContainer}>
@@ -118,10 +124,17 @@ export default function MessageScreen() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
+            <LinearGradient
+                colors={['#E3E0CF', '#FFFCF5']}
+                style={styles.topButtons}
+            >
+                <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
+                    <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
                 </TouchableOpacity>
+                <View style={{ width: 40 }} />
+            </LinearGradient>
+
+            <View style={styles.titleHeader}>
                 <Text style={styles.title}>Messages</Text>
             </View>
 
@@ -150,21 +163,27 @@ export default function MessageScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFDF6', // Cream background
+        backgroundColor: '#FFFDF6',
     },
-    header: {
-        paddingTop: 60,
+    topButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingHorizontal: 20,
-        paddingBottom: 20,
+        paddingTop: Platform.OS === 'ios' ? 10 : 60,
+        paddingBottom: 10,
     },
-    backButton: {
+    backButtonCircle: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#E54628', // Red/Orange
+        backgroundColor: '#E54628',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 20,
+    },
+    titleHeader: {
+        paddingHorizontal: 20,
+        paddingBottom: 20,
     },
     title: {
         fontSize: 32,
