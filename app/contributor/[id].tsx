@@ -1,4 +1,5 @@
 import { RestaurantCard } from '@/components/RestaurantCard';
+import { RestaurantMap } from '@/components/RestaurantMap';
 import { Fonts } from '@/constants/theme';
 import { useContributorProfile } from '@/hooks/useContributorProfile';
 import { Ionicons } from '@expo/vector-icons';
@@ -210,10 +211,15 @@ export default function ContributorProfileScreen() {
                     <Text style={styles.sectionTitle}>Carte interactive</Text>
                     <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
                 </View>
-                {/* Map would go here */}
-                <View style={styles.mapPlaceholder}>
-                    <Text style={styles.mapPlaceholderText}>Carte interactive</Text>
-                </View>
+                {profile.top_restaurants && profile.top_restaurants.length > 0 ? (
+                    <View style={styles.mapContainer}>
+                        <RestaurantMap restaurants={profile.top_restaurants} />
+                    </View>
+                ) : (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>Pas de carte disponible.</Text>
+                    </View>
+                )}
             </View>
         </ScrollView>
     );
@@ -380,8 +386,8 @@ const styles = StyleSheet.create({
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 16,
+        // justifyContent: 'space-between', // Align left
+        gap: 4, // Added gap to match home page
     },
     sectionTitle: {
         fontSize: 18,
@@ -389,6 +395,8 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
     },
     scrollContent: {
+        paddingHorizontal: 0,
+        paddingVertical: 20,
         gap: 16,
     },
     emptyContainer: {
@@ -405,12 +413,10 @@ const styles = StyleSheet.create({
         color: '#999999',
         fontFamily: Fonts.regular,
     },
-    mapPlaceholder: {
-        height: 200,
-        backgroundColor: '#F0F0F0',
+    mapContainer: {
+        height: 300,
         borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
+        overflow: 'hidden',
     },
     mapPlaceholderText: {
         color: '#999',

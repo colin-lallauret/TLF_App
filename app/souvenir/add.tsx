@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    StyleSheet,
-    TouchableOpacity,
-    FlatList,
-    Image,
-    ScrollView,
-    Alert,
-    ActivityIndicator,
-    Platform
-} from 'react-native';
-import { useRouter, Stack } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/theme'; // Assurez-vous que ce chemin est correct
 import { useSouvenirs } from '@/hooks/useSouvenirs';
 import { Ionicons } from '@expo/vector-icons'; // Assurez-vous d'avoir @expo/vector-icons
+import * as ImagePicker from 'expo-image-picker';
+import { Stack, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 export default function AddSouvenirScreen() {
     const router = useRouter();
@@ -176,10 +175,10 @@ export default function AddSouvenirScreen() {
                     <View style={styles.ratingContainer}>
                         {[1, 2, 3, 4, 5].map((star) => (
                             <TouchableOpacity key={star} onPress={() => setRating(star)}>
-                                <Ionicons
-                                    name={star <= rating ? "star" : "star-outline"}
-                                    size={32}
-                                    color="#FFD700"
+                                <Image
+                                    source={star <= rating ? require('@/assets/icons/star_full.svg') : require('@/assets/icons/star_empty.svg')}
+                                    style={{ width: 32, height: 32 }}
+                                    resizeMode="contain"
                                 />
                             </TouchableOpacity>
                         ))}
@@ -237,7 +236,7 @@ export default function AddSouvenirScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#fffcf5',
     },
     stepContainer: {
         flex: 1,

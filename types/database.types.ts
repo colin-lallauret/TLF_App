@@ -49,6 +49,7 @@ export interface Database {
                     lat: number | null;
                     lng: number | null;
                     budget_level: number | null;
+                    meal_types: string[] | null;
                     food_types: string[] | null;
                     dietary_prefs: string[] | null;
                     services: string[] | null;

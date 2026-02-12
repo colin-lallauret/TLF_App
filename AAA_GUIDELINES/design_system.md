@@ -11,6 +11,8 @@
 
 ## Dropshadow
 box-shadow: 0px 2px 16px 0px rgba(0, 0, 0, 0.25);
+#fffcf5
+expo-linear-gradient
 
 ## Typographie
 

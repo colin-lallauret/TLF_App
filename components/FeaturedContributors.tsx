@@ -44,6 +44,9 @@ export function FeaturedContributors() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 style={styles.scrollView}
+                snapToInterval={190} // Card width 170 + gap 20
+                decelerationRate="fast"
+                snapToAlignment="start"
             >
                 {contributors.map((contributor) => (
                     <ContributorCard

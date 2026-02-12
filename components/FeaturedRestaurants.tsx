@@ -52,6 +52,9 @@ export function FeaturedRestaurants() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 style={styles.scrollView}
+                snapToInterval={270} // Card width 250 + gap 20
+                decelerationRate="fast"
+                snapToAlignment="start"
             >
                 {restaurants.map((restaurant) => (
                     <RestaurantCard
@@ -87,8 +90,10 @@ const styles = StyleSheet.create({
         // Padding moved to contentContainerStyle to allow shadow clipping fix
     },
     scrollContent: {
-        paddingHorizontal: 20,
-        paddingVertical: 20, // Space for shadow
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 32, // Increased to prevent shadow clipping
+        paddingBottom: 32,
         gap: 20,
     },
     loadingContainer: {

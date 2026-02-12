@@ -1,6 +1,5 @@
 import { Fonts } from '@/constants/theme';
 import { RestaurantWithRating } from '@/hooks/useFavorites';
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -34,12 +33,12 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
     };
 
     // Helpers for badges
-    const getCuisineLabel = () => restaurant.food_types?.[0] || 'Varié';
-    const getPriceLabel = () => {
+    const getFoodTypeLabel = () => restaurant.food_types?.[0] || 'Varié';
+    const getBudgetLabel = () => {
         const level = restaurant.budget_level || 2;
-        return `~${level * 10}€`; // Mock price based on level
+        return '€'.repeat(level);
     };
-    const getDistanceLabel = () => '2 km'; // Mock distance
+    const getServiceLabel = () => restaurant.services?.[0] || 'Sur place';
 
     const isSimple = variant === 'simple';
 
@@ -75,16 +74,13 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                     {!isSimple && (
                         <View style={styles.badgesContainer}>
                             <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{getCuisineLabel()}</Text>
-                                <Ionicons name="earth" size={10} color="#FFF" style={styles.badgeIcon} />
+                                <Text style={styles.badgeText}>{getServiceLabel()}</Text>
                             </View>
                             <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{getPriceLabel()}</Text>
-                                <Ionicons name="cash-outline" size={10} color="#FFF" style={styles.badgeIcon} />
+                                <Text style={styles.badgeText}>{getFoodTypeLabel()}</Text>
                             </View>
                             <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{getDistanceLabel()}</Text>
-                                <Ionicons name="location-outline" size={10} color="#FFF" style={styles.badgeIcon} />
+                                <Text style={styles.badgeText}>{getBudgetLabel()}</Text>
                             </View>
                         </View>
                     )}
@@ -93,7 +89,6 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
                 <View style={styles.content}>
                     <View style={styles.row}>
                         <Text style={[styles.name, isSimple && styles.simpleName]} numberOfLines={2}>{restaurant.name}</Text>
-                        {!isSimple && <Ionicons name="flame" size={18} color="#FF4500" />}
                     </View>
 
                     {!isSimple && (

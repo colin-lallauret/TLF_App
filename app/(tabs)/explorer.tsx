@@ -95,7 +95,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        marginTop: 20,
         marginBottom: 12,
         gap: 4,
     },
@@ -125,8 +124,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     mapContainer: {
-        height: 500,
+        height: 300,
         marginBottom: 20,
         overflow: 'hidden',
+        borderRadius: 20, // Added border radius
     },
 });
