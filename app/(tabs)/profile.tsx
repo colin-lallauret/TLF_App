@@ -1,11 +1,12 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { Colors, Fonts } from '@/constants/theme';
-import { useAuth } from '@/hooks/useAuth';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { Fonts } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
 import { useSouvenirs } from '@/hooks/useSouvenirs';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { ImageBackground, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileScreen() {
     const { user, profile, signOut } = useAuth();
@@ -13,6 +14,7 @@ export default function ProfileScreen() {
     const { fetchMySouvenirs } = useSouvenirs();
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
     const [mySouvenirs, setMySouvenirs] = useState<any[]>([]);
+    const [filterType, setFilterType] = useState<'date' | 'note'>('date');
 
     useFocusEffect(
         useCallback(() => {
@@ -39,76 +41,106 @@ export default function ProfileScreen() {
     const isPremium = profile?.subscription_end_date &&
         new Date(profile.subscription_end_date) > new Date();
 
+    // Format name: First name + LAST NAME
+    const formatName = (fullName: string | null) => {
+        if (!fullName) return 'Utilisateur';
+        const parts = fullName.trim().split(' ');
+        if (parts.length > 1) {
+            const last = parts.pop()?.toUpperCase() || '';
+            const first = parts.join(' ');
+            return `${first} ${last}`;
+        }
+        return fullName;
+    };
+
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarText}>
-                        {profile?.full_name?.charAt(0).toUpperCase() || '👤'}
-                    </Text>
+            {/* Header with background image */}
+            <ImageBackground
+                source={{ uri: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800' }}
+                style={styles.headerBackground}
+                imageStyle={styles.headerBackgroundImage}
+            >
+                <View style={styles.headerOverlay} />
+
+                {/* Settings icon */}
+                <TouchableOpacity style={styles.settingsButton} onPress={handleLogout}>
+                    <Ionicons name="settings-outline" size={24} color="#1A1A1A" />
+                </TouchableOpacity>
+
+                {/* Wave shape */}
+                <View style={styles.waveContainer}>
+                    <View style={styles.wave} />
                 </View>
+            </ImageBackground>
+
+            {/* Avatar and name section */}
+            <View style={styles.profileSection}>
+                <View style={styles.avatarContainer}>
+                    {profile?.avatar_url ? (
+                        <Image source={{ uri: profile.avatar_url }} style={styles.avatar} contentFit="cover" />
+                    ) : (
+                        <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarText}>
+                                {profile?.full_name?.charAt(0).toUpperCase() || '👤'}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
                 <Text style={styles.userName}>
-                    {profile?.full_name || 'Utilisateur'}
+                    {formatName(profile?.full_name || null)}
                 </Text>
-                <Text style={styles.userBio}>
-                    {profile?.bio || (profile?.is_contributor ? 'Contributeur local' : 'Voyageur passionné')}
-                </Text>
-                {profile?.city && (
-                    <Text style={styles.userCity}>📍 {profile.city}</Text>
-                )}
+
                 {isPremium && (
                     <View style={styles.badgeContainer}>
+                        <Ionicons name="add-circle" size={14} color="#FFF" />
                         <Text style={styles.badge}>TLF+</Text>
                     </View>
                 )}
             </View>
 
+            {/* Content */}
             <View style={styles.content}>
-                <View style={styles.statsContainer}>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statNumber}>{mySouvenirs.length}</Text>
-                        <Text style={styles.statLabel}>Souvenirs</Text>
+                {/* Add souvenir button */}
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => router.push('/souvenir/add' as any)}
+                >
+                    <Text style={styles.addButtonIcon}>+</Text>
+                    <View style={styles.addButtonTextContainer}>
+                        <Text style={styles.addButtonTitle}>Ajouter un souvenir</Text>
+                        <Text style={styles.addButtonSubtitle}>
+                            Simplement tes photos, une phrase, une note et ce sera pour te souvenir à jamais de ce fameux restaurant.
+                        </Text>
                     </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statNumber}>0</Text>
-                        <Text style={styles.statLabel}>Favoris</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statNumber}>0</Text>
-                        <Text style={styles.statLabel}>Visites</Text>
-                    </View>
+                </TouchableOpacity>
+
+                {/* Mes souvenirs section */}
+                <View style={styles.souvenirsSectionHeader}>
+                    <Text style={styles.sectionTitle}>Mes souvenirs</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#1A1A1A" />
                 </View>
 
-                {!profile?.is_contributor && (
+                {/* Filter buttons */}
+                <View style={styles.filterContainer}>
                     <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => router.push('/souvenir/add' as any)}
+                        style={[styles.filterButton, filterType === 'date' && styles.filterButtonActive]}
+                        onPress={() => setFilterType('date')}
                     >
-                        <Text style={styles.addButtonText}>+ Ajouter un souvenir</Text>
+                        <Ionicons name="calendar-outline" size={16} color="#1A1A1A" />
+                        <Text style={styles.filterButtonText}>Date</Text>
                     </TouchableOpacity>
-                )}
-
-                <View style={styles.infoSection}>
-                    <Text style={styles.infoLabel}>Email</Text>
-                    <Text style={styles.infoValue}>{user?.email}</Text>
+                    <TouchableOpacity
+                        style={[styles.filterButton, filterType === 'note' && styles.filterButtonActive]}
+                        onPress={() => setFilterType('note')}
+                    >
+                        <Ionicons name="star-outline" size={16} color="#1A1A1A" />
+                        <Text style={styles.filterButtonText}>Note</Text>
+                    </TouchableOpacity>
                 </View>
 
-                {profile?.username && (
-                    <View style={styles.infoSection}>
-                        <Text style={styles.infoLabel}>Nom d'utilisateur</Text>
-                        <Text style={styles.infoValue}>@{profile.username}</Text>
-                    </View>
-                )}
-
-                <View style={styles.infoSection}>
-                    <Text style={styles.infoLabel}>Type de compte</Text>
-                    <Text style={styles.infoValue}>
-                        {profile?.is_contributor ? '🏆 Contributeur Local' : '✈️ Voyageur'}
-                    </Text>
-                </View>
-
-                <Text style={styles.sectionTitle}>Mes souvenirs</Text>
-
+                {/* Souvenirs list */}
                 {mySouvenirs.length === 0 ? (
                     <View style={styles.placeholder}>
                         <Text style={styles.placeholderText}>
@@ -123,36 +155,28 @@ export default function ProfileScreen() {
                         {mySouvenirs.map((souvenir, index) => (
                             <View key={souvenir.id || index} style={styles.souvenirCard}>
                                 {souvenir.photos_urls && souvenir.photos_urls[0] && (
-                                    <Image source={{ uri: souvenir.photos_urls[0] }} style={styles.souvenirImage} />
+                                    <Image source={{ uri: souvenir.photos_urls[0] }} style={styles.souvenirImage} contentFit="cover" />
                                 )}
                                 <View style={styles.souvenirContent}>
-                                    <View style={styles.souvenirHeader}>
-                                        <Text style={styles.souvenirTitle} numberOfLines={1}>{souvenir.title}</Text>
-                                        <View style={styles.ratingBadge}>
-                                            <Ionicons name="star" size={12} color="#fff" />
-                                            <Text style={styles.ratingText}>{souvenir.rating}</Text>
-                                        </View>
+                                    <Text style={styles.souvenirTitle} numberOfLines={1}>Titre</Text>
+                                    <Text style={styles.souvenirDescription} numberOfLines={4}>
+                                        {souvenir.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam tristique, erat quis elementum consectetur, diam ante tempor enim, ut vehicula felis ex sed enim. Maecenas rutrum lorem leo.'}
+                                    </Text>
+                                    <View style={styles.souvenirRating}>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <Ionicons
+                                                key={star}
+                                                name={star <= (souvenir.rating || 4) ? "star" : "star-outline"}
+                                                size={16}
+                                                color="#E54628"
+                                            />
+                                        ))}
                                     </View>
-                                    <Text style={styles.souvenirRestaurant}>
-                                        <Ionicons name="restaurant-outline" size={14} color="#666" /> {souvenir.restaurants?.name || 'Restaurant inconnu'}
-                                    </Text>
-                                    <Text style={styles.souvenirDate}>
-                                        {new Date(souvenir.date).toLocaleDateString()}
-                                    </Text>
-                                    {souvenir.description && (
-                                        <Text style={styles.souvenirDescription} numberOfLines={2}>
-                                            {souvenir.description}
-                                        </Text>
-                                    )}
                                 </View>
                             </View>
                         ))}
                     </View>
                 )}
-
-                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                    <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-                </TouchableOpacity>
             </View>
 
             <ConfirmDialog
@@ -171,122 +195,167 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.light.beige,
+        backgroundColor: '#FFFDF6', // Cream background
     },
-    header: {
-        padding: 20,
-        paddingTop: 60,
-        paddingBottom: 30,
-        backgroundColor: Colors.light.primary,
-        alignItems: 'center',
+    headerBackground: {
+        height: 200,
+        position: 'relative',
     },
-    avatarPlaceholder: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#FFFFFF',
+    headerBackgroundImage: {
+        opacity: 0.6,
+    },
+    headerOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(210, 180, 140, 0.3)', // Tan overlay
+    },
+    settingsButton: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#FFF',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 15,
+        zIndex: 10,
+    },
+    waveContainer: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        right: 0,
+        height: 80,
+        overflow: 'hidden',
+    },
+    wave: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 80,
+        backgroundColor: '#FFFDF6',
+        borderTopLeftRadius: 50,
+        borderTopRightRadius: 50,
+    },
+    profileSection: {
+        alignItems: 'center',
+        marginTop: -60,
+        paddingBottom: 20,
+    },
+    avatarContainer: {
+        marginBottom: 12,
+    },
+    avatar: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        borderWidth: 4,
+        borderColor: '#FFF',
+    },
+    avatarPlaceholder: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#E0E0E0',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 4,
+        borderColor: '#FFF',
     },
     avatarText: {
         fontSize: 50,
         fontFamily: Fonts.bold,
-        color: Colors.light.primary,
+        color: '#666',
     },
     userName: {
-        fontSize: 24,
+        fontSize: 20,
         fontFamily: Fonts.bold,
-        color: '#FFFFFF',
-        marginBottom: 5,
-    },
-    userBio: {
-        fontSize: 14,
-        color: '#FFFFFF',
-        opacity: 0.9,
-        textAlign: 'center',
-        paddingHorizontal: 20,
-        fontFamily: Fonts.regular,
-    },
-    userCity: {
-        fontSize: 14,
-        color: '#FFFFFF',
-        opacity: 0.9,
-        marginTop: 5,
-        fontFamily: Fonts.regular,
+        color: '#1A1A1A',
+        marginBottom: 8,
     },
     badgeContainer: {
-        marginTop: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#2D7A3E', // Green badge
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 4,
     },
     badge: {
-        backgroundColor: '#FFD700',
-        color: Colors.light.text,
-        paddingHorizontal: 15,
-        paddingVertical: 5,
-        borderRadius: 15,
+        color: '#FFFFFF',
         fontFamily: Fonts.bold,
         fontSize: 12,
     },
     content: {
         padding: 20,
     },
-    statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 20,
-        marginBottom: 20,
-    },
-    statBox: {
-        alignItems: 'center',
-    },
-    statNumber: {
-        fontSize: 24,
-        fontFamily: Fonts.bold,
-        color: Colors.light.primary,
-    },
-    statLabel: {
-        fontSize: 12,
-        color: Colors.light.icon,
-        marginTop: 5,
-        fontFamily: Fonts.regular,
-    },
     addButton: {
-        backgroundColor: Colors.light.secondary,
-        borderRadius: 20,
-        padding: 15,
-        alignItems: 'center',
-        marginBottom: 20,
+        flexDirection: 'row',
+        backgroundColor: '#FFF',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 24,
+        borderWidth: 2,
+        borderColor: '#E54628',
+        borderStyle: 'dashed',
     },
-    addButtonText: {
-        color: '#FFFFFF',
+    addButtonIcon: {
+        fontSize: 24,
+        color: '#E54628',
+        fontFamily: Fonts.bold,
+        marginRight: 12,
+    },
+    addButtonTextContainer: {
+        flex: 1,
+    },
+    addButtonTitle: {
         fontSize: 16,
         fontFamily: Fonts.bold,
-    },
-    infoSection: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 15,
-        padding: 16,
-        marginBottom: 12,
-    },
-    infoLabel: {
-        fontSize: 12,
-        color: Colors.light.icon,
+        color: '#E54628',
         marginBottom: 4,
-        fontFamily: Fonts.semiBold,
     },
-    infoValue: {
-        fontSize: 16,
-        color: Colors.light.text,
-        fontFamily: Fonts.medium,
+    addButtonSubtitle: {
+        fontSize: 12,
+        fontFamily: Fonts.regular,
+        color: '#666',
+        lineHeight: 16,
+    },
+    souvenirsSectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 12,
     },
     sectionTitle: {
         fontSize: 20,
         fontFamily: Fonts.bold,
-        color: Colors.light.text,
-        marginTop: 10,
-        marginBottom: 12,
+        color: '#1A1A1A',
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 16,
+    },
+    filterButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        backgroundColor: '#FFF',
+        gap: 6,
+    },
+    filterButtonActive: {
+        backgroundColor: '#F0F0F0',
+    },
+    filterButtonText: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: '#1A1A1A',
     },
     placeholder: {
         backgroundColor: '#FFFFFF',
@@ -297,90 +366,51 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     placeholderText: {
-        color: Colors.light.icon,
+        color: '#999',
         fontSize: 14,
         textAlign: 'center',
         fontFamily: Fonts.regular,
-    },
-    logoutButton: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 15,
-        padding: 16,
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#FF4444',
-        marginTop: 10,
-        marginBottom: 40,
-    },
-    logoutButtonText: {
-        color: '#FF4444',
-        fontSize: 16,
-        fontFamily: Fonts.bold,
     },
     souvenirsList: {
         gap: 16,
         marginBottom: 20,
     },
     souvenirCard: {
+        flexDirection: 'row',
         backgroundColor: '#FFF',
-        borderRadius: 15,
+        borderRadius: 16,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.05,
         shadowRadius: 4,
-        elevation: 3,
+        elevation: 2,
     },
     souvenirImage: {
-        width: '100%',
-        height: 150,
-        backgroundColor: '#eee',
+        width: 120,
+        height: 140,
+        backgroundColor: '#E0E0E0',
     },
     souvenirContent: {
-        padding: 15,
-    },
-    souvenirHeader: {
-        flexDirection: 'row',
+        flex: 1,
+        padding: 12,
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
     },
     souvenirTitle: {
         fontSize: 16,
         fontFamily: Fonts.bold,
-        flex: 1,
-        marginRight: 10,
-    },
-    ratingBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFD700',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 10,
-        gap: 4,
-    },
-    ratingText: {
-        color: '#fff',
-        fontFamily: Fonts.bold,
-        fontSize: 12,
-    },
-    souvenirRestaurant: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 4,
-        fontFamily: Fonts.regular,
-    },
-    souvenirDate: {
-        fontSize: 12,
-        color: '#999',
-        marginBottom: 8,
-        fontFamily: Fonts.regular,
+        color: '#1A1A1A',
+        marginBottom: 6,
     },
     souvenirDescription: {
-        fontSize: 14,
-        color: '#444',
-        lineHeight: 20,
+        fontSize: 12,
         fontFamily: Fonts.regular,
+        color: '#666',
+        lineHeight: 16,
+        marginBottom: 8,
+    },
+    souvenirRating: {
+        flexDirection: 'row',
+        gap: 4,
     },
 });
