@@ -5,6 +5,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { Colors, Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -31,11 +32,14 @@ export default function ExplorerScreen() {
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-            <View style={styles.header}>
+            <LinearGradient
+                colors={['#E3E0CF', '#FFFCF5']}
+                style={styles.header}
+            >
                 <View style={styles.searchContainer}>
                     <SearchBar />
                 </View>
-            </View>
+            </LinearGradient>
 
             <View style={styles.content}>
                 {/* Section Locaux à la Une */}
@@ -46,7 +50,7 @@ export default function ExplorerScreen() {
 
                 <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>Carte interactive</Text>
-                    <Ionicons name="chevron-forward" size={20} color={Colors.light.text} />
+                    <Ionicons name="chevron-forward" size={16} color={Colors.light.text} />
                 </View>
 
                 {mapRestaurants.length > 0 ? (
@@ -76,7 +80,7 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingTop: 60,
-        backgroundColor: '#FFFCF5', // Same as container
+        // backgroundColor removed to let gradient show
         zIndex: 10,
         paddingBottom: 10,
     },
@@ -90,10 +94,10 @@ const styles = StyleSheet.create({
     sectionHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 20,
         marginTop: 20,
         marginBottom: 12,
+        gap: 4,
     },
     sectionTitle: {
         fontSize: 20,

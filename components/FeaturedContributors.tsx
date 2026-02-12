@@ -37,7 +37,7 @@ export function FeaturedContributors() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Les locaux engagés</Text>
-                <Ionicons name="chevron-forward" size={20} color={Colors.light.text} />
+                <Ionicons name="chevron-forward" size={16} color={Colors.light.text} />
             </View>
             <ScrollView
                 horizontal
@@ -60,15 +60,15 @@ export function FeaturedContributors() {
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 20,
+        marginBottom: 0,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        marginBottom: 12,
+        paddingHorizontal: 20, // Keep padding
+        marginBottom: 0,
         marginTop: 10,
+        gap: 4, // Gap between title and arrow
     },
     title: {
         fontSize: 20,
@@ -76,11 +76,12 @@ const styles = StyleSheet.create({
         color: Colors.light.text,
     },
     scrollView: {
-        paddingLeft: 20,
+        // paddingLeft moved to contentContainerStyle to allow shadow clipping fix
     },
     scrollContent: {
-        paddingRight: 20,
-        gap: 16,
+        paddingHorizontal: 20,
+        paddingVertical: 20, // Space for shadow
+        gap: 20,
     },
     loadingContainer: {
         padding: 20,

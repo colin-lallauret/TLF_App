@@ -1,7 +1,6 @@
-import { Image } from 'expo-image';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Image, Platform } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -13,14 +12,14 @@ export default function TabLayout() {
     <Image
       source={source}
       style={{ width: size, height: size, tintColor: color }}
-      contentFit="contain"
+      resizeMode="contain"
     />
   );
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#000000',
+        tabBarActiveTintColor: '#DC4928',
         tabBarInactiveTintColor: '#000000',
         headerShown: false,
         tabBarButton: HapticTab,

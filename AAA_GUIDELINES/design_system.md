@@ -9,6 +9,9 @@
 | **Blanc Crème**| `#FFFCEB` | Arrière-plan principal, Cartes claires     |
 | **Vert**       | `#00661D` | Couleur secondaire, Validation, Nature     |
 
+## Dropshadow
+box-shadow: 0px 2px 16px 0px rgba(0, 0, 0, 0.25);
+
 ## Typographie
 
 *   **Famille** : `Fustat` (Google Fonts)

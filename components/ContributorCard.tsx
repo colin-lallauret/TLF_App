@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Image as RNImage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Profile = Database['public']['Tables']['profiles']['Row'] & {
     reviews?: { count: number }[];
@@ -62,48 +62,40 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
             ]}
             onPress={handlePress}
         >
-            <View style={styles.imageContainer}>
-                <Image
-                    source={contributor.avatar_url ? { uri: contributor.avatar_url } : require('@/assets/images/react-logo.png')} // Fallback image needed? Or initials wrapper
-                    style={styles.image}
-                    contentFit="cover"
-                />
+            <View style={styles.cardContent}>
+                <View style={styles.imageContainer}>
+                    <Image
+                        source={contributor.avatar_url ? { uri: contributor.avatar_url } : require('@/assets/images/react-logo.png')} // Fallback image needed? Or initials wrapper
+                        style={styles.image}
+                        contentFit="cover"
+                    />
 
-                <TouchableOpacity
-                    style={styles.favoriteButton}
-                    onPress={handleFavoritePress}
-                    activeOpacity={0.7}
-                >
-                    {isSimple ? (
-                        <Ionicons
-                            name={isFavorite ? "heart" : "heart-outline"}
-                            size={20}
-                            color="#D34C26" // Red for simple card to match RestaurantCard simple style
+                    <TouchableOpacity
+                        style={styles.favoriteButton}
+                        onPress={handleFavoritePress}
+                        activeOpacity={0.7}
+                    >
+                        <RNImage
+                            source={isFavorite ? require('@/assets/icons/liked.svg') : require('@/assets/icons/like.svg')}
+                            style={{ width: 24, height: 24 }}
+                            resizeMode="contain"
                         />
-                    ) : (
-                        <View style={styles.favoriteIconBackground}>
-                            <Ionicons
-                                name={isFavorite ? "heart" : "heart-outline"}
-                                size={14}
-                                color={isFavorite ? Colors.light.primary : Colors.light.icon}
-                            />
-                        </View>
-                    )}
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.infoContainer}>
-                <View style={styles.nameContainer}>
-                    <Text style={styles.firstName} numberOfLines={1}>{first}</Text>
-                    {last ? <Text style={styles.lastName} numberOfLines={1}>{last}</Text> : null}
+                    </TouchableOpacity>
                 </View>
 
-                {!isSimple && (
-                    <View style={styles.statsContainer}>
-                        <Ionicons name="restaurant-outline" size={14} color={Colors.light.primary} />
-                        <Text style={styles.statsText}>{contributionCount}</Text>
+                <View style={styles.infoContainer}>
+                    <View style={styles.nameContainer}>
+                        <Text style={styles.firstName} numberOfLines={1}>{first}</Text>
+                        {last ? <Text style={styles.lastName} numberOfLines={1}>{last}</Text> : null}
                     </View>
-                )}
+
+                    {!isSimple && (
+                        <View style={styles.statsContainer}>
+                            <Ionicons name="restaurant-outline" size={14} color={Colors.light.primary} />
+                            <Text style={styles.statsText}>{contributionCount}</Text>
+                        </View>
+                    )}
+                </View>
             </View>
         </Pressable>
     );
@@ -111,23 +103,27 @@ export function ContributorCard({ contributor, isFavorite: initialIsFavorite = f
 
 const styles = StyleSheet.create({
     card: {
-        width: 140,
-        backgroundColor: '#FFFFFF',
+        width: 170,
+        height: 230,
+        backgroundColor: '#fffcf5',
         borderRadius: 12,
-        overflow: 'hidden',
-        marginRight: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
+        elevation: 5,
+    },
+    cardContent: {
+        flex: 1,
+        borderRadius: 12,
+        overflow: 'hidden',
     },
     cardPressed: {
         opacity: 0.9,
     },
     imageContainer: {
         width: '100%',
-        aspectRatio: 1, // Square image
+        height: 170,
         backgroundColor: '#F0F0F0',
         position: 'relative',
     },

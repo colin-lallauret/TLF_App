@@ -63,15 +63,19 @@ export function SearchBar() {
     return (
         <View style={styles.container}>
             <View style={styles.inputContainer}>
-                <Ionicons name="search" size={20} color={Colors.light.icon} style={styles.searchIcon} />
+                {query.length === 0 && (
+                    <View style={styles.placeholderContainer}>
+                        <Ionicons name="search" size={20} color={Colors.light.icon} style={styles.placeholderIcon} />
+                        <Text style={styles.placeholderText}>Rechercher un restaurant, un local...</Text>
+                    </View>
+                )}
                 <TextInput
                     style={styles.input}
-                    placeholder="Rechercher un restaurant, un local..."
-                    placeholderTextColor={Colors.light.icon}
                     value={query}
                     onChangeText={setQuery}
                     autoCapitalize="none"
                     autoCorrect={false}
+                    textAlign="center"
                 />
                 {query.length > 0 && (
                     <TouchableOpacity onPress={() => setQuery('')} style={styles.clearButton}>
@@ -119,15 +123,29 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFFBE6', // Very light beige/cream from screenshot approximation
-        borderRadius: 30, // Fully rounded
-        height: 50,
+        backgroundColor: '#fffcf5',
+        borderRadius: 30,
+        height: 60,
         paddingHorizontal: 16,
         borderWidth: 1,
-        borderColor: '#EFEFEF', // Helper border if needed, or none
+        borderColor: '#EFEFEF',
+        position: 'relative',
     },
-    searchIcon: {
+    placeholderContainer: {
+        ...StyleSheet.absoluteFillObject,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 0,
+        pointerEvents: 'none',
+    },
+    placeholderIcon: {
         marginRight: 8,
+    },
+    placeholderText: {
+        fontSize: 14,
+        color: Colors.light.icon,
+        fontFamily: Fonts.medium,
     },
     input: {
         flex: 1,
@@ -135,9 +153,15 @@ const styles = StyleSheet.create({
         color: '#141414',
         fontFamily: Fonts.medium,
         height: '100%',
+        textAlign: 'center',
+        zIndex: 1,
+    },
+    inputActive: {
+        textAlign: 'center', // Or 'left' if preferred when typing
     },
     clearButton: {
         padding: 4,
+        zIndex: 2,
     },
     resultsContainer: {
         position: 'absolute',

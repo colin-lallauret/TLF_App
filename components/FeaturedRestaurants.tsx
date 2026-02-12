@@ -45,7 +45,7 @@ export function FeaturedRestaurants() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.sectionTitle}>Les meilleures adresses</Text>
-                <Ionicons name="chevron-forward" size={20} color={Colors.light.text} />
+                <Ionicons name="chevron-forward" size={16} color={Colors.light.text} />
             </View>
             <ScrollView
                 horizontal
@@ -73,10 +73,10 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         paddingHorizontal: 20,
         marginBottom: 12,
         marginTop: 10,
+        gap: 4,
     },
     sectionTitle: {
         fontSize: 20,
