@@ -126,6 +126,58 @@ export interface Database {
                     contributor_id?: string;
                 };
             };
+            trips: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    name: string;
+                    description: string | null;
+                    status: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    name: string;
+                    description?: string | null;
+                    status?: string | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    name?: string;
+                    description?: string | null;
+                    status?: string | null;
+                    created_at?: string;
+                };
+            };
+            trip_steps: {
+                Row: {
+                    id: string;
+                    trip_id: string;
+                    restaurant_id: string;
+                    step_order: number;
+                    meal_type: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    trip_id: string;
+                    restaurant_id: string;
+                    step_order: number;
+                    meal_type?: string | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    trip_id?: string;
+                    restaurant_id?: string;
+                    step_order?: number;
+                    meal_type?: string | null;
+                    created_at?: string;
+                };
+            };
         };
     };
 }
