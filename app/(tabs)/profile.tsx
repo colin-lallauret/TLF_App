@@ -1,4 +1,5 @@
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { SouvenirCard } from '@/components/SouvenirCard';
 import { WaveShape } from '@/components/WaveShape';
 import { Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
@@ -230,27 +231,14 @@ export default function ProfileScreen() {
                 ) : (
                     <View style={styles.souvenirsList}>
                         {sortedSouvenirs.map((souvenir, index) => (
-                            <View key={souvenir.id || index} style={styles.souvenirCard}>
-                                {souvenir.photos_urls && souvenir.photos_urls[0] && (
-                                    <Image source={{ uri: souvenir.photos_urls[0] }} style={styles.souvenirImage} contentFit="cover" />
-                                )}
-                                <View style={styles.souvenirContent}>
-                                    <Text style={styles.souvenirTitle} numberOfLines={1}>Titre</Text>
-                                    <Text style={styles.souvenirDescription} numberOfLines={4}>
-                                        {souvenir.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam tristique, erat quis elementum consectetur, diam ante tempor enim, ut vehicula felis ex sed enim. Maecenas rutrum lorem leo.'}
-                                    </Text>
-                                    <View style={styles.souvenirRating}>
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <Ionicons
-                                                key={star}
-                                                name={star <= (souvenir.rating || 4) ? "star" : "star-outline"}
-                                                size={16}
-                                                color="#E54628"
-                                            />
-                                        ))}
-                                    </View>
-                                </View>
-                            </View>
+                            <SouvenirCard
+                                key={souvenir.id || index}
+                                title={souvenir.title || 'Titre'}
+                                description={souvenir.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
+                                date={new Date(souvenir.date || souvenir.created_at || new Date()).toLocaleDateString('fr-FR')}
+                                rating={souvenir.rating || 0}
+                                images={souvenir.photos_urls?.length ? souvenir.photos_urls : []}
+                            />
                         ))}
                     </View>
                 )}
@@ -353,13 +341,15 @@ const styles = StyleSheet.create({
     },
     addButton: {
         flexDirection: 'row',
-        backgroundColor: '#FFF',
+        backgroundColor: 'rgba(215, 67, 4, 0.1)', // #D74304 with 10% opacity
         borderRadius: 16,
         padding: 16,
         marginBottom: 24,
-        borderWidth: 2,
-        borderColor: '#E54628',
-        borderStyle: 'dashed',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 14,
+        elevation: 4,
     },
     addButtonIcon: {
         fontSize: 24,
@@ -431,43 +421,5 @@ const styles = StyleSheet.create({
     souvenirsList: {
         gap: 16,
         marginBottom: 20,
-    },
-    souvenirCard: {
-        flexDirection: 'row',
-        backgroundColor: '#FFF',
-        borderRadius: 16,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    souvenirImage: {
-        width: 120,
-        height: 140,
-        backgroundColor: '#E0E0E0',
-    },
-    souvenirContent: {
-        flex: 1,
-        padding: 12,
-        justifyContent: 'space-between',
-    },
-    souvenirTitle: {
-        fontSize: 16,
-        fontFamily: Fonts.bold,
-        color: '#1A1A1A',
-        marginBottom: 6,
-    },
-    souvenirDescription: {
-        fontSize: 12,
-        fontFamily: Fonts.regular,
-        color: '#666',
-        lineHeight: 16,
-        marginBottom: 8,
-    },
-    souvenirRating: {
-        flexDirection: 'row',
-        gap: 4,
     },
 });
