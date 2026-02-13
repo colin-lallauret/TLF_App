@@ -338,6 +338,7 @@ const styles = StyleSheet.create({
     },
     content: {
         padding: 20,
+        overflow: 'visible', // Important pour que les ombres soient visibles sur mobile
     },
     addButton: {
         flexDirection: 'row',

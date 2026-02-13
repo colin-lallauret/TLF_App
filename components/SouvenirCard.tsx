@@ -21,81 +21,83 @@ export function SouvenirCard({ title, description, date, rating, images }: Souve
     };
 
     return (
-        <View style={styles.card}>
-            {/* Left Side: Image Carousel */}
-            <View style={styles.imageContainer} onLayout={onLayout}>
-                {imageWidth > 0 && (
-                    <ScrollView
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        onScroll={(e) => {
-                            const index = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
-                            setCurrentImageIndex(index);
-                        }}
-                        scrollEventThrottle={16}
-                        style={styles.carousel}
-                        contentContainerStyle={{ width: imageWidth * images.length }}
-                    >
-                        {images.map((img, index) => (
-                            <Image
+        <View style={styles.cardWrapper}>
+            <View style={styles.card}>
+                {/* Left Side: Image Carousel */}
+                <View style={styles.imageContainer} onLayout={onLayout}>
+                    {imageWidth > 0 && (
+                        <ScrollView
+                            horizontal
+                            pagingEnabled
+                            showsHorizontalScrollIndicator={false}
+                            onScroll={(e) => {
+                                const index = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
+                                setCurrentImageIndex(index);
+                            }}
+                            scrollEventThrottle={16}
+                            style={styles.carousel}
+                            contentContainerStyle={{ width: imageWidth * images.length }}
+                        >
+                            {images.map((img, index) => (
+                                <Image
+                                    key={index}
+                                    source={{ uri: img }}
+                                    style={[styles.image, { width: imageWidth }]}
+                                    contentFit="cover"
+                                />
+                            ))}
+                        </ScrollView>
+                    )}
+
+                    {/* Date Badge */}
+                    <View style={styles.dateBadge}>
+                        <Text style={styles.dateText}>le {date}</Text>
+                    </View>
+
+                    {/* Pagination Dots */}
+                    <View style={styles.pagination}>
+                        {images.map((_, index) => (
+                            <View
                                 key={index}
-                                source={{ uri: img }}
-                                style={[styles.image, { width: imageWidth }]}
-                                contentFit="cover"
+                                style={[
+                                    styles.dot,
+                                    index === currentImageIndex ? styles.activeDot : styles.inactiveDot
+                                ]}
                             />
                         ))}
-                    </ScrollView>
-                )}
-
-                {/* Date Badge */}
-                <View style={styles.dateBadge}>
-                    <Text style={styles.dateText}>le {date}</Text>
+                    </View>
                 </View>
 
-                {/* Pagination Dots */}
-                <View style={styles.pagination}>
-                    {images.map((_, index) => (
-                        <View
-                            key={index}
-                            style={[
-                                styles.dot,
-                                index === currentImageIndex ? styles.activeDot : styles.inactiveDot
-                            ]}
-                        />
-                    ))}
-                </View>
-            </View>
+                {/* Right Side: Content */}
+                <View style={styles.contentContainer}>
+                    <View>
+                        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
+                        <Text style={styles.description} numberOfLines={6} ellipsizeMode="tail">
+                            {description}
+                        </Text>
+                    </View>
 
-            {/* Right Side: Content */}
-            <View style={styles.contentContainer}>
-                <View>
-                    <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
-                    <Text style={styles.description} numberOfLines={6} ellipsizeMode="tail">
-                        {description}
-                    </Text>
-                </View>
+                    <View style={styles.ratingContainer}>
+                        {[1, 2, 3, 4, 5].map((star) => {
+                            let iconSource;
+                            if (rating >= star) {
+                                iconSource = require('@/assets/icons/star_full.png');
+                            } else if (rating >= star - 0.5) {
+                                iconSource = require('@/assets/icons/star_semi_full.png');
+                            } else {
+                                iconSource = require('@/assets/icons/star_empty.png');
+                            }
 
-                <View style={styles.ratingContainer}>
-                    {[1, 2, 3, 4, 5].map((star) => {
-                        let iconSource;
-                        if (rating >= star) {
-                            iconSource = require('@/assets/icons/star_full.png');
-                        } else if (rating >= star - 0.5) {
-                            iconSource = require('@/assets/icons/star_semi_full.png');
-                        } else {
-                            iconSource = require('@/assets/icons/star_empty.png');
-                        }
-
-                        return (
-                            <Image
-                                key={star}
-                                source={iconSource}
-                                style={styles.starIcon}
-                                contentFit="contain"
-                            />
-                        );
-                    })}
+                            return (
+                                <Image
+                                    key={star}
+                                    source={iconSource}
+                                    style={styles.starIcon}
+                                    contentFit="contain"
+                                />
+                            );
+                        })}
+                    </View>
                 </View>
             </View>
         </View>
@@ -103,6 +105,14 @@ export function SouvenirCard({ title, description, date, rating, images }: Souve
 }
 
 const styles = StyleSheet.create({
+    cardWrapper: {
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 14,
+        elevation: 4,
+    },
     card: {
         flexDirection: 'row',
         backgroundColor: '#FFFCF5',
@@ -110,12 +120,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         height: 240, // Slightly taller to accommodate content
         width: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 14,
-        elevation: 4,
-        marginBottom: 20,
     },
     imageContainer: {
         width: '45%',
