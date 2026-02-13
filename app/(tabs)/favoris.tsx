@@ -46,10 +46,10 @@ export default function FavorisScreen() {
                 <View style={styles.content}>
                     {/* Section Contributeurs */}
                     <View style={styles.section}>
-                        <TouchableOpacity style={styles.sectionHeader}>
+                        <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>Locaux</Text>
                             <Ionicons name="chevron-forward" size={16} color="#141414" />
-                        </TouchableOpacity>
+                        </View>
 
                         {favoriteContributors.length > 0 ? (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
@@ -71,10 +71,10 @@ export default function FavorisScreen() {
 
                     {/* Section Restaurants */}
                     <View style={[styles.section, { marginBottom: 40 }]}>
-                        <TouchableOpacity style={styles.sectionHeader}>
+                        <View style={styles.sectionHeader}>
                             <Text style={styles.sectionTitle}>Adresses</Text>
                             <Ionicons name="chevron-forward" size={16} color="#141414" />
-                        </TouchableOpacity>
+                        </View>
 
                         {favoriteRestaurants.length > 0 ? (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
@@ -165,7 +165,8 @@ const styles = StyleSheet.create({
     },
     horizontalScroll: {
         paddingHorizontal: 20,
-        paddingVertical: 20,
+        paddingTop: 12,
+        paddingBottom: 20,
         gap: 20,
     },
     emptyContainer: {

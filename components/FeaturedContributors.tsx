@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 20,
-        marginBottom: 12,
         marginTop: 10,
         gap: 4, // Gap between title and arrow
     },
@@ -82,6 +81,7 @@ const styles = StyleSheet.create({
         // paddingLeft moved to contentContainerStyle to allow shadow clipping fix
     },
     scrollContent: {
+        paddingTop: 12,
         paddingHorizontal: 20,
         paddingBottom: 20, // Space for shadow
         gap: 20,

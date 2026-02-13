@@ -555,6 +555,7 @@ const styles = StyleSheet.create({
     reviewsScrollContainer: {
         paddingLeft: 20,
         paddingRight: 20,
+        paddingBottom: 20,
         gap: 16,
     },
     reviewCard: {
