@@ -15,7 +15,7 @@ export default function ConversationScreen() {
     const { id, name } = useLocalSearchParams();
     const router = useRouter();
     const { messages, loading, sendMessage } = useMessages(id as string);
-    const { user, profile } = useAuth(); // Récupérer profile
+    const { user, profile, loading: authLoading } = useAuth(); // Récupérer profile et loading
     const [inputText, setInputText] = useState('');
     const [sending, setSending] = useState(false);
     const [otherParticipant, setOtherParticipant] = useState<any>(null);
@@ -48,9 +48,9 @@ export default function ConversationScreen() {
 
             if (conversation && !convError) {
                 // Determine which participant is the other user
-                const otherUserId = (conversation as any).participant1_id === user.id
-                    ? (conversation as any).participant2_id
-                    : (conversation as any).participant1_id;
+                const otherUserId = (conversation as any).participant_1 === user.id
+                    ? (conversation as any).participant_2
+                    : (conversation as any).participant_1;
 
                 console.log('Other user ID:', otherUserId);
 
@@ -187,8 +187,8 @@ export default function ConversationScreen() {
                     </View>
                 </KeyboardAvoidingView>
 
-                {/* Overlay pour non-membres */}
-                {!isMember && (
+                {/* Overlay pour non-membres (uniquement après chargement auth) */}
+                {!authLoading && !isMember && (
                     <View style={styles.overlay}>
                         <View style={styles.alertBox}>
                             <Text style={styles.alertTitle}>Messagerie privée</Text>
