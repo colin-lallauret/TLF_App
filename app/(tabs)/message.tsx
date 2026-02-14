@@ -1,7 +1,7 @@
+import { BackButton } from '@/components/BackButton';
 import { Colors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -70,9 +70,7 @@ export default function MessageScreen() {
                 </View>
 
                 {/* Fixed back button */}
-                <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
-                    <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
+                <BackButton style={styles.fixedBackButton} />
             </View>
         );
     }
@@ -169,9 +167,7 @@ export default function MessageScreen() {
             )}
 
             {/* Fixed back button */}
-            <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
-                <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
+            <BackButton style={styles.fixedBackButton} />
 
             {/* Overlay pour non-membres */}
             {!isMember && (
@@ -216,12 +212,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
     },
     titleHeader: {

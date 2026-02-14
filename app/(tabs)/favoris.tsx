@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton';
 import { ContributorCard } from '@/components/ContributorCard';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { Fonts } from '@/constants/theme';
@@ -7,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function FavorisScreen() {
     const { favoriteRestaurants, favoriteContributors, loading, refreshFavorites } = useFavorites();
@@ -97,9 +98,7 @@ export default function FavorisScreen() {
             </ScrollView>
 
             {/* Fixed back button */}
-            <TouchableOpacity onPress={() => router.back()} style={styles.fixedBackButton}>
-                <Ionicons name="arrow-undo-outline" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
+            <BackButton style={styles.fixedBackButton} />
         </View>
     );
 }
@@ -133,12 +132,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
     },
     title: {

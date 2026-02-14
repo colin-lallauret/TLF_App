@@ -1,9 +1,11 @@
+import { BackButton } from '@/components/BackButton';
+import { SearchRestaurantCard } from '@/components/SearchRestaurantCard';
+import { TripMap } from '@/components/TripMap';
 import { Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -16,10 +18,12 @@ export default function TripDetailScreen() {
     const [steps, setSteps] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!id) return;
-        fetchTripDetails();
-    }, [id]);
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!id) return;
+            fetchTripDetails();
+        }, [id])
+    );
 
     useEffect(() => {
         if (trip) {
@@ -35,7 +39,7 @@ export default function TripDetailScreen() {
             const { data: tripData, error: tripError } = await supabase
                 .from('trips')
                 .select('*')
-                .eq('id', id)
+                .eq('id', Array.isArray(id) ? id[0] : id)
                 .single();
 
             if (tripError) {
@@ -50,9 +54,9 @@ export default function TripDetailScreen() {
                 .from('trip_steps')
                 .select(`
                     *,
-                    restaurants (*)
+                    restaurants (*, reviews(rating))
                 `)
-                .eq('trip_id', id)
+                .eq('trip_id', Array.isArray(id) ? id[0] : id)
                 .order('step_order');
 
             if (stepsError) {
@@ -83,19 +87,28 @@ export default function TripDetailScreen() {
         }
 
         try {
-            const { error } = await supabase
+            const tripId = Array.isArray(id) ? id[0] : id;
+
+            const { data, error } = await supabase
                 .from('trips')
                 .update({ name: editedName } as any)
-                .eq('id', id);
+                .eq('id', tripId)
+                .select();
 
             if (error) throw error;
 
+            if (!data || data.length === 0) {
+                Alert.alert("Info", "Aucune modification n'a été enregistrée (vérifiez vos droits).");
+                return;
+            }
+
             // Update local state
             setTrip({ ...trip, name: editedName });
+            Alert.alert("Succès", "Parcours mis à jour !");
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating trip:', error);
-            Alert.alert("Erreur", "Impossible de mettre à jour le parcours.");
+            Alert.alert("Erreur", `Impossible de mettre à jour le parcours: ${error.message}`);
         }
     };
 
@@ -149,8 +162,13 @@ export default function TripDetailScreen() {
             }
 
             // Redirect on success
-            // Use replace to avoid going back to a deleted trip
-            router.replace('/(tabs)/decouvrir');
+            if (Platform.OS === 'web') {
+                router.replace('/(tabs)/decouvrir');
+            } else {
+                Alert.alert("Succès", "Parcours supprimé.", [
+                    { text: "OK", onPress: () => router.replace('/(tabs)/decouvrir') }
+                ]);
+            }
 
         } catch (error: any) {
             console.error('Error in deleteTrip:', error);
@@ -175,7 +193,7 @@ export default function TripDetailScreen() {
         router.push({
             pathname: '/create-trip/search',
             params: {
-                existingTripId: id as string,
+                existingTripId: Array.isArray(id) ? id[0] : id,
                 stepRowId: step.id,
                 currentStep: mealTypeId,
                 tripPlan: JSON.stringify([mealTypeId]), // Array of just this step
@@ -203,19 +221,16 @@ export default function TripDetailScreen() {
         <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
 
+            {/* Fixed Back Button */}
+            <BackButton style={styles.fixedBackButton} onPress={() => router.push('/(tabs)/decouvrir')} />
+
             <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* Header */}
                 <LinearGradient
                     colors={['#E3E0CF', '#FFFCF5']}
                     style={styles.header}
                 >
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Image
-                            source={require('@/assets/icons/return_arrow.png')}
-                            style={{ width: 24, height: 24 }}
-                            contentFit="contain"
-                        />
-                    </TouchableOpacity>
+                    <View style={{ width: 40 }} /> {/* Placeholder for alignment */}
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.headerSubtitle}>MON PARCOURS</Text>
                         {isEditing ? (
@@ -292,32 +307,12 @@ export default function TripDetailScreen() {
                                         </View>
 
                                         {restaurant ? (
-                                            <TouchableOpacity
-                                                style={[styles.restaurantCard, isEditing && styles.restaurantCardEditing]}
+                                            <SearchRestaurantCard
+                                                restaurant={restaurant}
                                                 onPress={() => isEditing ? handleEditStep(step) : router.push(`/restaurant/${restaurant.id}`)}
-                                                activeOpacity={0.8}
+                                                style={isEditing ? styles.restaurantCardEditing : undefined}
+                                                actionIcon={null}
                                             >
-                                                <View style={styles.cardHeader}>
-                                                    <Text style={styles.restaurantName}>{restaurant.name}</Text>
-                                                    <View style={styles.badgeContainer}>
-                                                        <Text style={styles.badgeText}>
-                                                            {Array(restaurant.budget_level || 1).fill('€').join('')}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-
-                                                <Text style={styles.restaurantAddress}>
-                                                    {restaurant.address}, {restaurant.city}
-                                                </Text>
-
-                                                <View style={styles.tagsContainer}>
-                                                    {restaurant.food_types?.slice(0, 2).map((tag: string, i: number) => (
-                                                        <View key={i} style={styles.tag}>
-                                                            <Text style={styles.tagText}>{tag}</Text>
-                                                        </View>
-                                                    ))}
-                                                </View>
-
                                                 {/* Edit Overlay */}
                                                 {isEditing && (
                                                     <View style={styles.editOverlay}>
@@ -327,7 +322,7 @@ export default function TripDetailScreen() {
                                                         </View>
                                                     </View>
                                                 )}
-                                            </TouchableOpacity>
+                                            </SearchRestaurantCard>
                                         ) : (
                                             <View style={[styles.restaurantCard, { opacity: 0.5 }]}>
                                                 <Text>Restaurant non trouvé</Text>
@@ -339,13 +334,21 @@ export default function TripDetailScreen() {
                         })}
                     </View>
                 </View>
+
+                {/* Interactive Map */}
+                <TripMap steps={steps} />
             </ScrollView>
 
-            {/* Footer Delete Button */}
+            {/* Footer Buttons */}
             {isEditing && (
                 <View style={styles.footer}>
+                    <TouchableOpacity style={styles.saveButton} onPress={toggleEditMode}>
+                        <Ionicons name="save-outline" size={20} color="#FFF" />
+                        <Text style={styles.saveButtonText}>Sauvegarder</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity style={styles.deleteButton} onPress={deleteTrip}>
-                        <Ionicons name="trash-outline" size={20} color="#FFF" />
+                        <Ionicons name="trash-outline" size={20} color="#DC4928" />
                         <Text style={styles.deleteButtonText}>Supprimer le parcours</Text>
                     </TouchableOpacity>
                 </View>
@@ -398,6 +401,13 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.medium,
         color: '#DC4928',
     },
+    fixedBackButton: {
+        position: 'absolute',
+        top: 60, // Match header paddingTop
+        left: 20, // Match header paddingHorizontal
+        zIndex: 100,
+        elevation: 10,
+    },
     header: {
         paddingTop: 60,
         paddingBottom: 20,
@@ -406,14 +416,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
     },
-    backButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#DC4928',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+
     headerTextContainer: {
         flex: 1,
     },
@@ -563,59 +566,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.bold,
     },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    restaurantName: {
-        fontSize: 18,
-        fontFamily: Fonts.bold,
-        color: '#1A1A1A',
-        flex: 1,
-    },
-    restaurantAddress: {
-        fontSize: 14,
-        fontFamily: Fonts.regular,
-        color: '#666',
-        marginBottom: 12,
-    },
-    tagsContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    tag: {
-        backgroundColor: '#F5F5F5',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-    },
-    tagText: {
-        fontSize: 12,
-        fontFamily: Fonts.medium,
-        color: '#666',
-    },
-    badgeContainer: {
-        backgroundColor: '#F0F0F0',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-        marginLeft: 8,
-    },
-    badgeText: {
-        fontSize: 12,
-        fontFamily: Fonts.bold,
-        color: '#333',
-    },
     footer: {
         padding: 20,
         backgroundColor: '#FFFCF5',
         borderTopWidth: 1,
         borderTopColor: '#E0E0E0',
+        gap: 12,
     },
-    deleteButton: {
+    saveButton: {
         backgroundColor: '#DC4928',
         flexDirection: 'row',
         alignItems: 'center',
@@ -624,8 +582,24 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         gap: 8,
     },
-    deleteButtonText: {
+    saveButtonText: {
         color: '#FFF',
+        fontSize: 16,
+        fontFamily: Fonts.bold,
+    },
+    deleteButton: {
+        backgroundColor: 'transparent',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        borderRadius: 12,
+        gap: 8,
+        borderWidth: 1,
+        borderColor: '#DC4928',
+    },
+    deleteButtonText: {
+        color: '#DC4928',
         fontSize: 16,
         fontFamily: Fonts.bold,
     },

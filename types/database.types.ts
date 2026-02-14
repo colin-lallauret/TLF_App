@@ -54,6 +54,7 @@ export interface Database {
                     dietary_prefs: string[] | null;
                     services: string[] | null;
                     atmospheres: string[] | null;
+                    image_url: string | null;
                     created_at: string;
                 };
             };

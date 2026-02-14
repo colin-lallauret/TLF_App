@@ -1,9 +1,10 @@
+import { BackButton } from '@/components/BackButton';
+import { SearchRestaurantCard } from '@/components/SearchRestaurantCard';
 import { Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/database.types';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -16,7 +17,9 @@ const SERVICES: Record<string, string> = { '1': 'Sur place', '2': 'À emporter',
 const AMBIANCES: Record<string, string> = { '1': 'Romantique', '2': 'Familial', '3': 'Conviviale', '4': 'Animé', '5': 'Calme' };
 const DIETS: Record<string, string> = { '1': 'Végan', '2': 'Végétarien', '3': 'Sans gluten', '4': 'Halal', '5': 'Casher' };
 
-type Restaurant = Database['public']['Tables']['restaurants']['Row'];
+
+
+type Restaurant = Database['public']['Tables']['restaurants']['Row'] & { image_url?: string | null, reviews?: { rating: number | null }[] | null };
 
 export default function TripSearchScreen() {
     const router = useRouter();
@@ -67,7 +70,7 @@ export default function TripSearchScreen() {
         const fetchRestaurants = async () => {
             setLoading(true);
             try {
-                let query = supabase.from('restaurants').select('*');
+                let query = supabase.from('restaurants').select('*, reviews(rating)');
 
                 if (searchQuery) {
                     query = query.or(`name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`);
@@ -242,6 +245,9 @@ export default function TripSearchScreen() {
         <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
 
+            {/* Fixed Back Button */}
+            <BackButton style={styles.fixedBackButton} />
+
             <ScrollView
                 ref={scrollRef}
                 style={styles.container}
@@ -253,13 +259,7 @@ export default function TripSearchScreen() {
                     style={styles.header}
                     onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
                 >
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Image
-                            source={require('@/assets/icons/return_arrow.png')}
-                            style={{ width: 24, height: 24 }}
-                            contentFit="contain"
-                        />
-                    </TouchableOpacity>
+                    <View style={{ width: 40 }} /> {/* Placeholdre for alignment */}
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.headerTitle}>Étape {stepIndex + 1}/{totalSteps}</Text>
                         <Text style={styles.headerSubtitle}>{stepLabel}</Text>
@@ -461,35 +461,11 @@ export default function TripSearchScreen() {
 
                         {results.length > 0 ? (
                             results.map((restaurant) => (
-                                <TouchableOpacity
+                                <SearchRestaurantCard
                                     key={restaurant.id}
-                                    style={styles.resultCard}
+                                    restaurant={restaurant}
                                     onPress={() => handleSelectRestaurant(restaurant.id)}
-                                >
-                                    <View style={styles.resultContent}>
-                                        <View style={styles.resultHeader}>
-                                            <Text style={styles.resultTitle}>{restaurant.name}</Text>
-                                            <View style={styles.badgeContainer}>
-                                                <Text style={styles.badgeText}>
-                                                    {Array(restaurant.budget_level || 1).fill('€').join('')}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                        <Text style={styles.resultAddress}>{restaurant.address}, {restaurant.city}</Text>
-
-                                        <View style={styles.tagsContainer}>
-                                            {restaurant.food_types?.slice(0, 2).map((tag, index) => (
-                                                <View key={index} style={styles.tag}><Text style={styles.tagText}>{tag}</Text></View>
-                                            ))}
-                                            {restaurant.meal_types?.slice(0, 1).map((tag, index) => (
-                                                <View key={`meal-${index}`} style={styles.tag}><Text style={styles.tagText}>{tag}</Text></View>
-                                            ))}
-                                        </View>
-                                    </View>
-                                    <View style={styles.arrowContainer}>
-                                        <Ionicons name="add-circle" size={32} color="#DC4928" />
-                                    </View>
-                                </TouchableOpacity>
+                                />
                             ))
                         ) : (
                             !loading && (
@@ -536,14 +512,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
     },
-    backButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#DC4928',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+
     headerTextContainer: {
         flex: 1,
     },
@@ -659,72 +628,11 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
         marginBottom: 16,
     },
-    resultCard: {
-        backgroundColor: '#FFF',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12,
-        flexDirection: 'row',
+    resultsPlaceholder: {
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 2,
+        justifyContent: 'center',
+        paddingVertical: 60,
     },
-    resultContent: {
-        flex: 1,
-        gap: 4,
-    },
-    resultHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    resultTitle: {
-        fontSize: 18,
-        fontFamily: Fonts.bold,
-        color: '#1A1A1A',
-        flex: 1,
-    },
-    resultAddress: {
-        fontSize: 14,
-        fontFamily: Fonts.regular,
-        color: '#666',
-        marginBottom: 8,
-    },
-    tagsContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    tag: {
-        backgroundColor: '#F5F5F5',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 8,
-    },
-    tagText: {
-        fontSize: 12,
-        fontFamily: Fonts.medium,
-        color: '#666',
-    },
-    arrowContainer: {
-        paddingLeft: 12,
-    },
-    badgeContainer: {
-        backgroundColor: '#F0F0F0',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    badgeText: {
-        fontSize: 12,
-        fontFamily: Fonts.bold,
-        color: '#333',
-    },
-
     // Floating Button
     floatingButton: {
         position: 'absolute',
@@ -741,6 +649,13 @@ const styles = StyleSheet.create({
         elevation: 5,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    fixedBackButton: {
+        position: 'absolute',
+        top: 60, // Match header paddingTop
+        left: 20, // Match header paddingHorizontal
+        zIndex: 100,
+        elevation: 10,
     },
     floatingButtonText: {
         color: '#FFF',
@@ -765,10 +680,5 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8,
-    },
-    resultsPlaceholder: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 60,
     },
 });

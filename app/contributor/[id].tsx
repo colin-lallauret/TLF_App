@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton';
 import { RestaurantCard } from '@/components/RestaurantCard';
 import { RestaurantMap } from '@/components/RestaurantMap';
 import { TabBar } from '@/components/TabBar';
@@ -229,9 +230,7 @@ export default function ContributorProfileScreen() {
             </ScrollView>
 
             {/* Fixed back button */}
-            <TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()}>
-                <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-            </TouchableOpacity>
+            <BackButton style={styles.fixedBackButton} />
 
             <TabBar />
         </View>
@@ -295,12 +294,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 60,
         left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
     },
     favoriteButton: {

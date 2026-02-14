@@ -1,6 +1,6 @@
+import { BackButton } from '@/components/BackButton';
 import { Fonts } from '@/constants/theme';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -54,13 +54,7 @@ export default function CreateTripScreen() {
                 colors={['#E3E0CF', '#FFFCF5']}
                 style={styles.header}
             >
-                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Image
-                        source={require('@/assets/icons/return_arrow.png')}
-                        style={{ width: 24, height: 24 }}
-                        contentFit="contain"
-                    />
-                </TouchableOpacity>
+                <BackButton />
                 <Text style={styles.headerTitle}>Composez votre parcours</Text>
             </LinearGradient>
 
@@ -135,14 +129,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
     },
-    backButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#DC4928',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+
     headerTitle: {
         fontSize: 24,
         fontFamily: Fonts.bold,

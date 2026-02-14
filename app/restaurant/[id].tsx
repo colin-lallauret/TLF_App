@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton';
 import { RestaurantMap } from '@/components/RestaurantMap';
 import { TabBar } from '@/components/TabBar';
 import { Fonts } from '@/constants/theme';
@@ -119,10 +120,10 @@ export default function RestaurantDetailsScreen() {
                         style={styles.favoriteButton}
                         onPress={() => restaurant && toggleRestaurantFavorite(restaurant.id)}
                     >
-                        <Ionicons
-                            name={isFavorite ? "heart" : "heart-outline"}
-                            size={28}
-                            color={isFavorite ? "#E65127" : "#1A1A1A"}
+                        <Image
+                            source={isFavorite ? require('@/assets/icons/like_full_orange.png') : require('@/assets/icons/like_empty_black.png')}
+                            style={{ width: 28, height: 28 }}
+                            contentFit="contain"
                         />
                     </TouchableOpacity>
                 </LinearGradient>
@@ -345,10 +346,7 @@ export default function RestaurantDetailsScreen() {
             </ScrollView >
 
             {/* Fixed back button */}
-            < TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()
-            }>
-                <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-            </TouchableOpacity >
+            <BackButton style={styles.fixedBackButton} />
 
             <TabBar />
         </View >
@@ -399,24 +397,10 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontFamily: Fonts.bold,
     },
-    backButtonCircle: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
     fixedBackButton: {
         position: 'absolute',
         top: 60,
         left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
     },
     favoriteButton: {

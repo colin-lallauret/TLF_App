@@ -1,8 +1,9 @@
+import { BackButton } from '@/components/BackButton';
+import { SearchRestaurantCard } from '@/components/SearchRestaurantCard';
 import { Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/database.types';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -17,7 +18,7 @@ const SERVICES: Record<string, string> = { '1': 'Sur place', '2': 'À emporter',
 const AMBIANCES: Record<string, string> = { '1': 'Romantique', '2': 'Familial', '3': 'Conviviale', '4': 'Animé', '5': 'Calme' };
 const DIETS: Record<string, string> = { '1': 'Végan', '2': 'Végétarien', '3': 'Sans gluten', '4': 'Halal', '5': 'Casher' };
 
-type Restaurant = Database['public']['Tables']['restaurants']['Row'];
+type Restaurant = Database['public']['Tables']['restaurants']['Row'] & { image_url?: string | null, reviews?: { rating: number | null }[] | null };
 
 export default function SearchAddressScreen() {
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function SearchAddressScreen() {
         const fetchRestaurants = async () => {
             setLoading(true);
             try {
-                let query = supabase.from('restaurants').select('*');
+                let query = supabase.from('restaurants').select('*, reviews(rating)');
 
                 // Search query
                 if (searchQuery) {
@@ -172,23 +173,20 @@ export default function SearchAddressScreen() {
                 headerShown: false,
             }} />
 
+            {/* Fixed Back Button */}
+            <BackButton style={styles.fixedBackButton} />
+
             <ScrollView
                 ref={scrollRef}
                 style={styles.container}
                 contentContainerStyle={{ paddingBottom: 100 }} // Add padding for bottom button
             >
-                {/* Header with gradient and back button */}
+                {/* Header with gradient */}
                 <LinearGradient
                     colors={['#E3E0CF', '#FFFCF5']}
                     style={styles.header}
                 >
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                        <Image
-                            source={require('@/assets/icons/return_arrow.png')}
-                            style={{ width: 24, height: 24 }}
-                            contentFit="contain"
-                        />
-                    </TouchableOpacity>
+                    <View style={{ width: 40 }} /> {/* Placeholder to keep title alignment */}
                     <Text style={styles.headerTitle}>Rechercher une adresse</Text>
                 </LinearGradient>
 
@@ -519,39 +517,12 @@ export default function SearchAddressScreen() {
 
                         {results.length > 0 ? (
                             results.map((restaurant) => (
-                                <TouchableOpacity
+                                <SearchRestaurantCard
                                     key={restaurant.id}
-                                    style={styles.resultCard}
+                                    restaurant={restaurant}
                                     onPress={() => router.push(`/restaurant/${restaurant.id}`)}
-                                >
-                                    <View style={styles.resultContent}>
-                                        <View style={styles.resultHeader}>
-                                            <Text style={styles.resultTitle}>{restaurant.name}</Text>
-                                            <View style={styles.badgeContainer}>
-                                                <Text style={styles.badgeText}>
-                                                    {Array(restaurant.budget_level || 1).fill('€').join('')}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                        <Text style={styles.resultAddress}>{restaurant.address}, {restaurant.city}</Text>
-
-                                        <View style={styles.tagsContainer}>
-                                            {restaurant.food_types?.slice(0, 2).map((tag, index) => (
-                                                <View key={index} style={styles.tag}>
-                                                    <Text style={styles.tagText}>{tag}</Text>
-                                                </View>
-                                            ))}
-                                            {restaurant.meal_types?.slice(0, 1).map((tag, index) => (
-                                                <View key={`meal-${index}`} style={styles.tag}>
-                                                    <Text style={styles.tagText}>{tag}</Text>
-                                                </View>
-                                            ))}
-                                        </View>
-                                    </View>
-                                    <View style={styles.arrowContainer}>
-                                        <Ionicons name="chevron-forward" size={24} color="#666" />
-                                    </View>
-                                </TouchableOpacity>
+                                    actionIcon={<Ionicons name="chevron-forward" size={24} color="#666" />}
+                                />
                             ))
                         ) : (
                             !loading && (
@@ -616,6 +587,13 @@ const styles = StyleSheet.create({
         fontSize: 18, // Slightly larger
         fontFamily: Fonts.bold,
     },
+    fixedBackButton: {
+        position: 'absolute',
+        top: 60, // Match header paddingTop
+        left: 20, // Match header paddingHorizontal
+        zIndex: 100,
+        elevation: 10,
+    },
     header: {
         paddingTop: 60,
         paddingBottom: 20,
@@ -624,14 +602,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 12,
     },
-    backButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#DC4928',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+
     headerTitle: {
         fontSize: 24,
         fontFamily: Fonts.bold,

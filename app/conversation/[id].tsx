@@ -1,3 +1,4 @@
+import { BackButton } from '@/components/BackButton';
 import { Colors } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useMessages } from '@/hooks/useMessages';
@@ -119,9 +120,7 @@ export default function ConversationScreen() {
                 style={styles.topButtons}
             >
 
-                <TouchableOpacity style={styles.backButtonCircle} onPress={() => router.back()}>
-                    <Ionicons name="arrow-undo-outline" size={24} color="#FFF" />
-                </TouchableOpacity>
+                <BackButton style={styles.backButtonCircle} />
 
                 <View style={styles.headerInfo}>
                     {otherParticipant?.avatar_url ? (
@@ -144,6 +143,7 @@ export default function ConversationScreen() {
                     </View>
                 </View>
 
+                {/* Empty view for spacing balance */}
                 <View style={{ width: 40 }} />
             </LinearGradient>
 
@@ -220,12 +220,7 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
     },
     backButtonCircle: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E54628',
-        alignItems: 'center',
-        justifyContent: 'center',
+        // Style preserved for override if needed, but base styles are in BackButton
     },
     headerInfo: {
         flex: 1,
