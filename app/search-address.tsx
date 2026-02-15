@@ -1,5 +1,3 @@
-import { BackButton } from '@/components/BackButton';
-import { SearchRestaurantCard } from '@/components/SearchRestaurantCard';
 import { Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/database.types';
@@ -9,7 +7,10 @@ import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import { BackButton } from '@/components/BackButton';
+import { SearchRestaurantCard } from '@/components/SearchRestaurantCard';
+import { Slider } from '@miblanchard/react-native-slider';
+
 
 // Mappings for filters
 const MEAL_TYPES: Record<string, string> = { '1': 'Petit-déjeuner', '2': 'Déjeuner', '3': 'Pause sucrée', '4': 'Dîner' };
@@ -186,7 +187,7 @@ export default function SearchAddressScreen() {
                     colors={['#E3E0CF', '#FFFCF5']}
                     style={styles.header}
                 >
-                    <View style={{ width: 40 }} /> {/* Placeholder to keep title alignment */}
+                    <View style={{ width: 40 }} />
                     <Text style={styles.headerTitle}>Rechercher une adresse</Text>
                 </LinearGradient>
 
@@ -258,44 +259,31 @@ export default function SearchAddressScreen() {
                         <View style={styles.filterGroup}>
                             <Text style={styles.filterLabel}>Budget</Text>
                             <View style={styles.sliderContainer}>
-                                <MultiSlider
-                                    values={[budgetRange[0], budgetRange[1]]}
-                                    sliderLength={300}
-                                    onValuesChange={setBudgetRange}
-                                    min={0}
-                                    max={200}
+                                <Slider
+                                    value={budgetRange}
+                                    onValueChange={(val) => setBudgetRange(val as number[])}
+                                    minimumValue={0}
+                                    maximumValue={200}
                                     step={1}
-                                    allowOverlap={false}
-                                    snapped
-                                    selectedStyle={{
-                                        backgroundColor: '#DC4928',
-                                    }}
-                                    unselectedStyle={{
-                                        backgroundColor: '#E0E0E0',
-                                    }}
                                     containerStyle={{
+                                        width: 300,
                                         height: 40,
                                     }}
                                     trackStyle={{
                                         height: 5,
-                                        backgroundColor: 'transparent',
+                                        borderRadius: 2.5,
                                     }}
-                                    touchDimensions={{
-                                        height: 40,
-                                        width: 40,
-                                        borderRadius: 20,
-                                        slipDisplacement: 40,
-                                    }}
-                                    markerStyle={{
+                                    minimumTrackTintColor="#DC4928"
+                                    maximumTrackTintColor="#E0E0E0"
+                                    thumbStyle={{
                                         height: 24,
                                         width: 24,
                                         borderRadius: 12,
                                         backgroundColor: '#DC4928',
-                                        borderWidth: 0,
-                                        marginTop: 3,
                                     }}
-                                    pressedMarkerStyle={{
-                                        backgroundColor: '#DC4928',
+                                    thumbTouchSize={{
+                                        width: 40,
+                                        height: 40,
                                     }}
                                 />
                                 <View style={styles.sliderLabels}>
@@ -345,44 +333,31 @@ export default function SearchAddressScreen() {
                         <View style={styles.filterGroup}>
                             <Text style={styles.filterLabel}>Distance</Text>
                             <View style={styles.sliderContainer}>
-                                <MultiSlider
-                                    values={[radiusRange[0], radiusRange[1]]}
-                                    sliderLength={300}
-                                    onValuesChange={setRadiusRange}
-                                    min={0}
-                                    max={50}
+                                <Slider
+                                    value={radiusRange}
+                                    onValueChange={(val) => setRadiusRange(val as number[])}
+                                    minimumValue={0}
+                                    maximumValue={50}
                                     step={1}
-                                    allowOverlap={false}
-                                    snapped
-                                    selectedStyle={{
-                                        backgroundColor: '#DC4928',
-                                    }}
-                                    unselectedStyle={{
-                                        backgroundColor: '#E0E0E0',
-                                    }}
                                     containerStyle={{
+                                        width: 300,
                                         height: 40,
                                     }}
                                     trackStyle={{
                                         height: 5,
-                                        backgroundColor: 'transparent',
+                                        borderRadius: 2.5,
                                     }}
-                                    touchDimensions={{
-                                        height: 40,
-                                        width: 40,
-                                        borderRadius: 20,
-                                        slipDisplacement: 40,
-                                    }}
-                                    markerStyle={{
+                                    minimumTrackTintColor="#DC4928"
+                                    maximumTrackTintColor="#E0E0E0"
+                                    thumbStyle={{
                                         height: 24,
                                         width: 24,
                                         borderRadius: 12,
                                         backgroundColor: '#DC4928',
-                                        borderWidth: 0,
-                                        marginTop: 3,
                                     }}
-                                    pressedMarkerStyle={{
-                                        backgroundColor: '#DC4928',
+                                    thumbTouchSize={{
+                                        width: 40,
+                                        height: 40,
                                     }}
                                 />
                                 <View style={styles.sliderLabels}>

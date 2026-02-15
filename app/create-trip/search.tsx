@@ -4,7 +4,7 @@ import { Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Database } from '@/types/database.types';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import { Slider } from '@miblanchard/react-native-slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -259,7 +259,7 @@ export default function TripSearchScreen() {
                     style={styles.header}
                     onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
                 >
-                    <View style={{ width: 40 }} /> {/* Placeholdre for alignment */}
+                    <View style={{ width: 40 }} />
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.headerTitle}>Étape {stepIndex + 1}/{totalSteps}</Text>
                         <Text style={styles.headerSubtitle}>{stepLabel}</Text>
@@ -294,13 +294,32 @@ export default function TripSearchScreen() {
                         <View style={styles.filterGroup}>
                             <Text style={styles.filterLabel}>Budget</Text>
                             <View style={styles.sliderContainer}>
-                                <MultiSlider
-                                    values={[budgetRange[0], budgetRange[1]]}
-                                    sliderLength={300}
-                                    onValuesChange={setBudgetRange}
-                                    min={0} max={200} step={1}
-                                    selectedStyle={{ backgroundColor: '#DC4928' }}
-                                    markerStyle={{ backgroundColor: '#DC4928', height: 24, width: 24 }}
+                                <Slider
+                                    value={budgetRange}
+                                    onValueChange={(val) => setBudgetRange(val as number[])}
+                                    minimumValue={0}
+                                    maximumValue={200}
+                                    step={1}
+                                    containerStyle={{
+                                        width: 300,
+                                        height: 40,
+                                    }}
+                                    trackStyle={{
+                                        height: 5,
+                                        borderRadius: 2.5,
+                                    }}
+                                    minimumTrackTintColor="#DC4928"
+                                    maximumTrackTintColor="#E0E0E0"
+                                    thumbStyle={{
+                                        height: 24,
+                                        width: 24,
+                                        borderRadius: 12,
+                                        backgroundColor: '#DC4928',
+                                    }}
+                                    thumbTouchSize={{
+                                        width: 40,
+                                        height: 40,
+                                    }}
                                 />
                                 <View style={styles.sliderLabels}>
                                     <Text style={styles.sliderLabelText}>{budgetRange[0]}€</Text>
@@ -342,13 +361,32 @@ export default function TripSearchScreen() {
                         <View style={styles.filterGroup}>
                             <Text style={styles.filterLabel}>Distance</Text>
                             <View style={styles.sliderContainer}>
-                                <MultiSlider
-                                    values={[radiusRange[0], radiusRange[1]]}
-                                    sliderLength={300}
-                                    onValuesChange={setRadiusRange}
-                                    min={0} max={50} step={1}
-                                    selectedStyle={{ backgroundColor: '#DC4928' }}
-                                    markerStyle={{ backgroundColor: '#DC4928', height: 24, width: 24 }}
+                                <Slider
+                                    value={radiusRange}
+                                    onValueChange={(val) => setRadiusRange(val as number[])}
+                                    minimumValue={0}
+                                    maximumValue={50}
+                                    step={1}
+                                    containerStyle={{
+                                        width: 300,
+                                        height: 40,
+                                    }}
+                                    trackStyle={{
+                                        height: 5,
+                                        borderRadius: 2.5,
+                                    }}
+                                    minimumTrackTintColor="#DC4928"
+                                    maximumTrackTintColor="#E0E0E0"
+                                    thumbStyle={{
+                                        height: 24,
+                                        width: 24,
+                                        borderRadius: 12,
+                                        backgroundColor: '#DC4928',
+                                    }}
+                                    thumbTouchSize={{
+                                        width: 40,
+                                        height: 40,
+                                    }}
                                 />
                                 <View style={styles.sliderLabels}>
                                     <Text style={styles.sliderLabelText}>{radiusRange[0]} km</Text>

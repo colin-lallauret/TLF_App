@@ -230,7 +230,7 @@ export default function TripDetailScreen() {
                     colors={['#E3E0CF', '#FFFCF5']}
                     style={styles.header}
                 >
-                    <View style={{ width: 40 }} /> {/* Placeholder for alignment */}
+                    <View style={{ width: 40 }} />
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.headerSubtitle}>MON PARCOURS</Text>
                         {isEditing ? (
@@ -281,9 +281,10 @@ export default function TripDetailScreen() {
                                     <View style={styles.timelineLeft}>
                                         <View style={styles.timelineDot} />
                                         {!isLast && (
-                                            <View style={styles.timelineLine}>
+                                            <>
+                                                <View style={styles.timelineLine} />
                                                 {distance && (
-                                                    <View style={styles.distanceBadge}>
+                                                    <View style={[styles.distanceBadge, { position: 'absolute', top: 50, zIndex: 10 }]}>
                                                         <Text style={styles.distanceText}>
                                                             {distance < 1
                                                                 ? `${Math.round(distance * 1000)}m`
@@ -291,7 +292,7 @@ export default function TripDetailScreen() {
                                                         </Text>
                                                     </View>
                                                 )}
-                                            </View>
+                                            </>
                                         )}
                                     </View>
 
