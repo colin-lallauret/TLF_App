@@ -1,5 +1,6 @@
 import { BackButton } from '@/components/BackButton';
 import { SearchRestaurantCard } from '@/components/SearchRestaurantCard';
+import { TabBar } from '@/components/TabBar';
 import { TripMap } from '@/components/TripMap';
 import { Fonts } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
@@ -224,7 +225,7 @@ export default function TripDetailScreen() {
             {/* Fixed Back Button */}
             <BackButton style={styles.fixedBackButton} onPress={() => router.push('/(tabs)/decouvrir')} />
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 160 }}>
                 {/* Header */}
                 <LinearGradient
                     colors={['#E3E0CF', '#FFFCF5']}
@@ -352,6 +353,13 @@ export default function TripDetailScreen() {
                         <Ionicons name="trash-outline" size={20} color="#DC4928" />
                         <Text style={styles.deleteButtonText}>Supprimer le parcours</Text>
                     </TouchableOpacity>
+                </View>
+            )}
+
+            {/* Bottom Navigation Bar */}
+            {!isEditing && (
+                <View style={styles.tabBarWrapper}>
+                    <TabBar />
                 </View>
             )}
         </View>
@@ -566,6 +574,12 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 14,
         fontFamily: Fonts.bold,
+    },
+    tabBarWrapper: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
     },
     footer: {
         padding: 20,
