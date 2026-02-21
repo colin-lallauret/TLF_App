@@ -32,15 +32,20 @@ export function useContributors(limit: number = 10): UseContributorsReturn {
             const { data, error: fetchError } = await supabase
                 .from('profiles')
                 .select('*, reviews(count)')
-                .eq('is_contributor', true)
-                .order('created_at', { ascending: false })
-                .limit(limit);
+                .eq('is_contributor', true);
 
             if (fetchError) {
                 throw new Error(fetchError.message);
             }
 
-            setContributors(data as any || []);
+            // Trier par nombre d'avis (locaux les plus engagés)
+            const sortedData = (data as any || []).sort((a: any, b: any) => {
+                const countA = a.reviews?.[0]?.count || 0;
+                const countB = b.reviews?.[0]?.count || 0;
+                return countB - countA;
+            }).slice(0, limit);
+
+            setContributors(sortedData);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Une erreur est survenue'));
         } finally {

@@ -36,7 +36,13 @@ export function SearchRestaurantCard({ restaurant, onPress, actionIcon, style, c
                     <Text style={styles.resultTitle}>{restaurant.name}</Text>
                     <View style={styles.badgeContainer}>
                         <Text style={styles.badgeText}>
-                            {Array(restaurant.budget_level || 1).fill('€').join('')}
+                            {(() => {
+                                const level = restaurant.budget_level || 50;
+                                if (level <= 50) return '€';
+                                if (level <= 100) return '€€';
+                                if (level <= 150) return '€€€';
+                                return '€€€€';
+                            })()}
                         </Text>
                     </View>
                 </View>

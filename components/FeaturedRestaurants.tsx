@@ -7,7 +7,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { RestaurantCard } from './RestaurantCard';
 
 export function FeaturedRestaurants() {
-    const { restaurants, loading, error } = useRestaurants(100);
+    const { restaurants, loading, error } = useRestaurants(10);
     const { favoriteRestaurantIds, toggleRestaurantFavorite } = useFavoriteIds();
 
     if (loading) {

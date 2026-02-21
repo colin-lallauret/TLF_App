@@ -35,8 +35,11 @@ export function RestaurantCard({ restaurant, isFavorite: initialIsFavorite = fal
     // Helpers for badges
     const getFoodTypeLabel = () => restaurant.food_types?.[0] || 'Varié';
     const getBudgetLabel = () => {
-        const level = restaurant.budget_level || 2;
-        return '€'.repeat(level);
+        const level = restaurant.budget_level || 50;
+        if (level <= 50) return '€';
+        if (level <= 100) return '€€';
+        if (level <= 150) return '€€€';
+        return '€€€€';
     };
     const getServiceLabel = () => restaurant.services?.[0] || 'Sur place';
 

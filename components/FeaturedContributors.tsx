@@ -11,7 +11,7 @@ import { ContributorCard } from './ContributorCard';
  * Affiche une liste horizontale scrollable des contributeurs locaux
  */
 export function FeaturedContributors() {
-    const { contributors, loading, error } = useContributors(100);
+    const { contributors, loading, error } = useContributors(10);
     const { favoriteContributorIds, toggleContributorFavorite } = useFavoriteIds();
 
     if (loading) {

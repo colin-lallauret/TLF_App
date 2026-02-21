@@ -74,13 +74,11 @@ export default function RestaurantDetailsScreen() {
     };
 
     const getBudgetLabelFull = (level: number | null) => {
-        switch (level) {
-            case 1: return "€ Économique";
-            case 2: return "€€ Moyen";
-            case 3: return "€€€ Élevé";
-            case 4: return "€€€€ Luxe";
-            default: return "€€ Moyen";
-        }
+        const val = level || 50;
+        if (val <= 50) return "€";
+        if (val <= 100) return "€€";
+        if (val <= 150) return "€€€";
+        return "€€€€";
     };
 
     const renderInfoSection = (title: string, items: string[] | null) => {
