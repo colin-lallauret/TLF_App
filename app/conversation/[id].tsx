@@ -147,7 +147,11 @@ export default function ConversationScreen() {
                 <View style={{ width: 40 }} />
             </LinearGradient>
 
-            <View style={{ flex: 1 }}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={0}
+            >
                 <FlatList
                     data={messages}
                     renderItem={renderMessage}
@@ -155,6 +159,7 @@ export default function ConversationScreen() {
                     inverted
                     contentContainerStyle={styles.listContent}
                     scrollEnabled={isMember} // Désactiver le scroll
+                    keyboardShouldPersistTaps="handled"
                     ListEmptyComponent={
                         !loading ? (
                             <View style={styles.emptyContainer}>
@@ -164,44 +169,46 @@ export default function ConversationScreen() {
                     }
                 />
 
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-                >
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            value={inputText}
-                            onChangeText={setInputText}
-                            placeholder="Écrivez un message..."
-                            multiline
-                            editable={isMember} // Désactiver l'input
-                        />
-                        <TouchableOpacity
-                            onPress={handleSend}
-                            disabled={!inputText.trim() || sending || !isMember} // Désactiver le bouton
-                            style={[styles.sendButton, (!inputText.trim() || sending || !isMember) && styles.sendButtonDisabled]}
-                        >
-                            <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder="Écrivez un message..."
+                        multiline
+                        editable={isMember} // Désactiver l'input
+                        returnKeyType="send"
+                        blurOnSubmit={false}
+                        onSubmitEditing={(e) => {
+                            // On mobile, "enter" key corresponds to submit natively
+                            // Wait a short delay if we need preventing default behavior issues, but usually fine
+                            handleSend();
+                        }}
+                    />
+                    <TouchableOpacity
+                        onPress={handleSend}
+                        disabled={!inputText.trim() || sending || !isMember} // Désactiver le bouton
+                        style={[styles.sendButton, (!inputText.trim() || sending || !isMember) && styles.sendButtonDisabled]}
+                    >
+                        <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
+
+            {/* Overlay pour non-membres (uniquement après chargement auth) */}
+            {!authLoading && !isMember && (
+                <View style={styles.overlay}>
+                    <View style={styles.alertBox}>
+                        <Text style={styles.alertTitle}>Messagerie privée</Text>
+                        <Text style={styles.alertMessage}>
+                            L'échange avec les contributeurs est réservé aux membres.
+                        </Text>
+                        <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+                            <Text style={styles.subscribeButtonText}>Choisir mon abonnement</Text>
                         </TouchableOpacity>
                     </View>
-                </KeyboardAvoidingView>
-
-                {/* Overlay pour non-membres (uniquement après chargement auth) */}
-                {!authLoading && !isMember && (
-                    <View style={styles.overlay}>
-                        <View style={styles.alertBox}>
-                            <Text style={styles.alertTitle}>Messagerie privée</Text>
-                            <Text style={styles.alertMessage}>
-                                L'échange avec les contributeurs est réservé aux membres.
-                            </Text>
-                            <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
-                                <Text style={styles.subscribeButtonText}>Choisir mon abonnement</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
-            </View>
+                </View>
+            )}
         </SafeAreaView>
     );
 }
@@ -310,12 +317,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#F2F2F7', // iOS style grey
         borderRadius: 22.5, // Match send button radius
         paddingHorizontal: 16,
-        paddingVertical: 12, // Equal padding top/bottom for vertical center
+        paddingTop: Platform.OS === 'ios' ? 12 : 12,
+        paddingBottom: Platform.OS === 'ios' ? 12 : 2, // Less base padding at bottom to handle multiline layout properly
         minHeight: 45, // Match send button height
         maxHeight: 120, // Slightly taller max height
         fontSize: 16,
+        lineHeight: 20, // Important for comfortable multiline text reading
         marginRight: 12,
         color: '#000000',
+        textAlignVertical: 'center', // Fix Android text clipping
     },
     sendButton: {
         backgroundColor: '#E65127',
