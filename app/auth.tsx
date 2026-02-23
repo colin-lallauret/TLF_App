@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     ActivityIndicator,
     Alert,
@@ -109,6 +110,18 @@ export default function AuthScreen() {
                         ) : (
                             <Text style={styles.loginButtonText}>Se connecter</Text>
                         )}
+                    </TouchableOpacity>
+
+                    {/* Temporary Dev Button */}
+                    <TouchableOpacity
+                        onPress={async () => {
+                            await AsyncStorage.removeItem('hasSeenOnboarding');
+                            Alert.alert('Réinitialisé !', 'Fermez l\'application et relancez-la pour revoir l\'onboarding.');
+                        }}
+                        style={{ marginTop: 20 }}>
+                        <Text style={{ color: '#999', textAlign: 'center', fontFamily: Fonts.regular, fontSize: 12 }}>
+                            🔧 Revoir l'Onboarding (Mode Test)
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>

@@ -29,8 +29,18 @@ export default function SearchAddressScreen() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [locations, setLocations] = useState<string[]>([]);
-    const [budgetRange, setBudgetRange] = useState([0, 60]);
+    const [budgetLevel, setBudgetLevel] = useState<number[]>([1, 4]);
     const [radiusRange, setRadiusRange] = useState([0, 20]);
+
+    const getBudgetLabel = (level: number) => {
+        switch (level) {
+            case 1: return '€';
+            case 2: return '€€';
+            case 3: return '€€€';
+            case 4: return '€€€€';
+            default: return '';
+        }
+    };
     const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
     const [selectedAmbiance, setSelectedAmbiance] = useState<string[]>([]);
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -87,18 +97,13 @@ export default function SearchAddressScreen() {
                     query = query.overlaps('dietary_prefs', diets);
                 }
 
-                // Budget (Simple mapping based on range)
-                // If max budget is low (< 20), show cheap (level 1)
-                // If max budget is medium (< 40), show up to level 2
-                // This is an approximation since DB uses 1-4 levels
-                if (budgetRange[1] < 20) {
-                    query = query.lte('budget_level', 1);
-                } else if (budgetRange[1] < 40) {
-                    query = query.lte('budget_level', 2);
-                } else if (budgetRange[1] < 70) {
-                    query = query.lte('budget_level', 3);
+                // Budget
+                if (budgetLevel[0] > 1) {
+                    query = query.gte('budget_level', budgetLevel[0]);
                 }
-                // If max > 70, show all (level 4 included by default)
+                if (budgetLevel[1] < 4) {
+                    query = query.lte('budget_level', budgetLevel[1]);
+                }
 
                 const { data, error } = await query;
 
@@ -120,7 +125,7 @@ export default function SearchAddressScreen() {
         }, 300); // Debounce for sliders/typing
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery, locations, budgetRange, selectedCuisines, selectedMealTypes, selectedServices, selectedAmbiance, selectedDiets]);
+    }, [searchQuery, locations, budgetLevel, selectedCuisines, selectedMealTypes, selectedServices, selectedAmbiance, selectedDiets]);
 
     const addLocation = () => {
         if (!locations.includes('Toulon')) {
@@ -260,10 +265,10 @@ export default function SearchAddressScreen() {
                             <Text style={styles.filterLabel}>Budget</Text>
                             <View style={styles.sliderContainer}>
                                 <Slider
-                                    value={budgetRange}
-                                    onValueChange={(val) => setBudgetRange(val as number[])}
-                                    minimumValue={0}
-                                    maximumValue={200}
+                                    value={budgetLevel}
+                                    onValueChange={(val) => setBudgetLevel(val as number[])}
+                                    minimumValue={1}
+                                    maximumValue={4}
                                     step={1}
                                     containerStyle={{
                                         width: 300,
@@ -287,8 +292,8 @@ export default function SearchAddressScreen() {
                                     }}
                                 />
                                 <View style={styles.sliderLabels}>
-                                    <Text style={styles.sliderLabelText}>{budgetRange[0]}€</Text>
-                                    <Text style={styles.sliderLabelText}>{budgetRange[1]}€</Text>
+                                    <Text style={styles.sliderLabelText}>{getBudgetLabel(budgetLevel[0])}</Text>
+                                    <Text style={styles.sliderLabelText}>{getBudgetLabel(budgetLevel[1])}</Text>
                                 </View>
                             </View>
                         </View>

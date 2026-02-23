@@ -45,8 +45,18 @@ export default function TripSearchScreen() {
     // Filters State
     const [searchQuery, setSearchQuery] = useState('');
     const [locations, setLocations] = useState<string[]>([]);
-    const [budgetRange, setBudgetRange] = useState([0, 60]);
+    const [budgetLevel, setBudgetLevel] = useState<number[]>([1, 4]);
     const [radiusRange, setRadiusRange] = useState([0, 20]);
+
+    const getBudgetLabel = (level: number) => {
+        switch (level) {
+            case 1: return '€';
+            case 2: return '€€';
+            case 3: return '€€€';
+            case 4: return '€€€€';
+            default: return '';
+        }
+    };
     const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
     const [selectedAmbiance, setSelectedAmbiance] = useState<string[]>([]);
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -102,9 +112,8 @@ export default function TripSearchScreen() {
                     query = query.overlaps('dietary_prefs', diets);
                 }
 
-                if (budgetRange[1] < 20) query = query.lte('budget_level', 1);
-                else if (budgetRange[1] < 40) query = query.lte('budget_level', 2);
-                else if (budgetRange[1] < 70) query = query.lte('budget_level', 3);
+                if (budgetLevel[0] > 1) query = query.gte('budget_level', budgetLevel[0]);
+                if (budgetLevel[1] < 4) query = query.lte('budget_level', budgetLevel[1]);
 
                 const { data, error } = await query;
                 if (error) console.error('Error fetching restaurants:', error);
@@ -122,7 +131,7 @@ export default function TripSearchScreen() {
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery, locations, budgetRange, selectedCuisines, selectedServices, selectedAmbiance, selectedDiets, currentStepId]);
+    }, [searchQuery, locations, budgetLevel, selectedCuisines, selectedServices, selectedAmbiance, selectedDiets, currentStepId]);
 
 
     // Toggle functions
@@ -295,10 +304,10 @@ export default function TripSearchScreen() {
                             <Text style={styles.filterLabel}>Budget</Text>
                             <View style={styles.sliderContainer}>
                                 <Slider
-                                    value={budgetRange}
-                                    onValueChange={(val) => setBudgetRange(val as number[])}
-                                    minimumValue={0}
-                                    maximumValue={200}
+                                    value={budgetLevel}
+                                    onValueChange={(val) => setBudgetLevel(val as number[])}
+                                    minimumValue={1}
+                                    maximumValue={4}
                                     step={1}
                                     containerStyle={{
                                         width: 300,
@@ -322,8 +331,8 @@ export default function TripSearchScreen() {
                                     }}
                                 />
                                 <View style={styles.sliderLabels}>
-                                    <Text style={styles.sliderLabelText}>{budgetRange[0]}€</Text>
-                                    <Text style={styles.sliderLabelText}>{budgetRange[1]}€</Text>
+                                    <Text style={styles.sliderLabelText}>{getBudgetLabel(budgetLevel[0])}</Text>
+                                    <Text style={styles.sliderLabelText}>{getBudgetLabel(budgetLevel[1])}</Text>
                                 </View>
                             </View>
                         </View>
