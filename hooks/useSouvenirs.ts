@@ -9,15 +9,31 @@ export function useSouvenirs() {
     const { user } = useAuth();
     const [uploading, setUploading] = useState(false);
 
+    const fetchAllRestaurants = useCallback(async () => {
+        try {
+            const { data, error } = await supabase
+                .from('restaurants')
+                .select('id, name, city, address')
+                .order('name', { ascending: true })
+                .limit(200);
+
+            if (error) throw error;
+            return data || [];
+        } catch (e) {
+            console.error('Error fetching all restaurants:', e);
+            return [];
+        }
+    }, []);
+
     const searchRestaurants = useCallback(async (query: string) => {
         if (!query || query.length < 2) return [];
 
         try {
             const { data, error } = await supabase
                 .from('restaurants')
-                .select('id, name, city')
+                .select('id, name, city, address')
                 .ilike('name', `%${query}%`)
-                .limit(10);
+                .limit(20);
 
             if (error) throw error;
             return data || [];
@@ -118,5 +134,5 @@ export function useSouvenirs() {
         }
     }, [user]);
 
-    return { searchRestaurants, addSouvenir, fetchMySouvenirs, uploading };
+    return { searchRestaurants, fetchAllRestaurants, addSouvenir, fetchMySouvenirs, uploading };
 }

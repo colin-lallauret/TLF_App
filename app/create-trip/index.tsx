@@ -1,5 +1,6 @@
 import { BackButton } from '@/components/BackButton';
-import { Fonts } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
@@ -15,8 +16,17 @@ const MEAL_OPTIONS = [
 
 export default function CreateTripScreen() {
     const router = useRouter();
+    const { profile } = useAuth();
     const [selectedMeals, setSelectedMeals] = useState<string[]>([]);
     const [tripName, setTripName] = useState('');
+
+    const isMember = profile?.subscription_end_date
+        ? new Date(profile.subscription_end_date) > new Date()
+        : false;
+
+    const handleSubscribe = () => {
+        router.push('/(tabs)/profile');
+    };
 
     const toggleMeal = (id: string) => {
         setSelectedMeals(prev =>
@@ -112,6 +122,21 @@ export default function CreateTripScreen() {
                     <Ionicons name="arrow-forward" size={20} color="#FFF" />
                 </TouchableOpacity>
             </View>
+
+            {/* Overlay pour non-membres */}
+            {!isMember && (
+                <View style={styles.overlay}>
+                    <View style={styles.alertBox}>
+                        <Text style={styles.alertTitle}>Créer un parcours</Text>
+                        <Text style={styles.alertMessage}>
+                            La création de parcours est réservée aux membres.
+                        </Text>
+                        <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribe}>
+                            <Text style={styles.subscribeButtonText}>Choisir mon abonnement</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
@@ -120,6 +145,60 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFCF5',
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        zIndex: 2000,
+    },
+    alertBox: {
+        backgroundColor: '#FFF',
+        padding: 24,
+        borderRadius: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        width: '100%',
+        maxWidth: 340,
+        borderWidth: 1,
+        borderColor: '#EEE',
+    },
+    alertTitle: {
+        fontSize: 20,
+        fontFamily: Fonts.bold,
+        color: '#1A1A1A',
+        marginBottom: 10,
+    },
+    alertMessage: {
+        fontSize: 16,
+        fontFamily: Fonts.regular,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 24,
+    },
+    subscribeButton: {
+        backgroundColor: Colors.light.primary,
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 30,
+        width: '100%',
+        alignItems: 'center',
+    },
+    subscribeButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+        fontFamily: Fonts.bold,
     },
     header: {
         paddingTop: 60,

@@ -23,11 +23,12 @@ import {
 export default function AddSouvenirScreen() {
     const { profile } = useAuth();
     const router = useRouter();
-    const { searchRestaurants, addSouvenir, uploading } = useSouvenirs();
+    const { searchRestaurants, fetchAllRestaurants, addSouvenir, uploading } = useSouvenirs();
 
     // États du formulaire
     const [step, setStep] = useState(1); // 1: Choix Resto, 2: Détails
     const [searchQuery, setSearchQuery] = useState('');
+    const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [selectedRestaurant, setSelectedRestaurant] = useState<any>(null);
     const [title, setTitle] = useState('');
@@ -37,6 +38,7 @@ export default function AddSouvenirScreen() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [photos, setPhotos] = useState<string[]>([]);
     const [searching, setSearching] = useState(false);
+    const [loadingAll, setLoadingAll] = useState(true);
 
     const isMember = profile?.subscription_end_date
         ? new Date(profile.subscription_end_date) > new Date()
@@ -46,7 +48,17 @@ export default function AddSouvenirScreen() {
         router.push('/(tabs)/profile');
     };
 
-    // Recherche de restaurants (debounce)
+    // Chargement de toutes les adresses au montage
+    useEffect(() => {
+        (async () => {
+            setLoadingAll(true);
+            const all = await fetchAllRestaurants();
+            setAllRestaurants(all);
+            setLoadingAll(false);
+        })();
+    }, []);
+
+    // Recherche filtrée (debounce)
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchQuery.length >= 2) {
@@ -57,10 +69,13 @@ export default function AddSouvenirScreen() {
             } else {
                 setSearchResults([]);
             }
-        }, 500);
+        }, 400);
 
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
+
+    // Liste affichée : résultats de recherche si query, sinon toutes les adresses
+    const displayedRestaurants = searchQuery.length >= 2 ? searchResults : allRestaurants;
 
     const handleSelectRestaurant = (resto: any) => {
         setSelectedRestaurant(resto);
@@ -132,7 +147,9 @@ export default function AddSouvenirScreen() {
             <Ionicons name="restaurant-outline" size={24} color={Colors.light.primary} />
             <View style={styles.restaurantInfo}>
                 <Text style={styles.restaurantName}>{item.name}</Text>
-                <Text style={styles.restaurantCity}>{item.city}</Text>
+                <Text style={styles.restaurantCity}>
+                    {[item.address, item.city].filter(Boolean).join(' · ')}
+                </Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </TouchableOpacity>
@@ -147,23 +164,36 @@ export default function AddSouvenirScreen() {
                     <Text style={styles.label}>Quel restaurant avez-vous visité ?</Text>
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Rechercher un restaurant..."
+                        placeholder="Filtrer par nom..."
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         autoFocus
                         editable={isMember}
                     />
-                    {searching && <ActivityIndicator style={{ marginTop: 20 }} color={Colors.light.primary} />}
+                    {(searching || loadingAll) && <ActivityIndicator style={{ marginTop: 10, marginBottom: 6 }} color={Colors.light.primary} />}
+                    {!loadingAll && (
+                        <Text style={styles.countText}>
+                            {searchQuery.length >= 2
+                                ? `${displayedRestaurants.length} résultat${displayedRestaurants.length > 1 ? 's' : ''}`
+                                : `${allRestaurants.length} adresse${allRestaurants.length > 1 ? 's' : ''} disponible${allRestaurants.length > 1 ? 's' : ''}`
+                            }
+                        </Text>
+                    )}
                     <FlatList
-                        data={searchResults}
+                        data={displayedRestaurants}
                         renderItem={renderRestaurantItem}
                         keyExtractor={(item) => item.id}
                         style={styles.resultsList}
                         ListEmptyComponent={
-                            searchQuery.length >= 2 && !searching ? (
-                                <Text style={styles.emptyText}>Aucun restaurant trouvé.</Text>
+                            !loadingAll && !searching ? (
+                                <Text style={styles.emptyText}>
+                                    {searchQuery.length >= 2
+                                        ? 'Aucun restaurant trouvé.'
+                                        : 'Aucune adresse disponible.'}
+                                </Text>
                             ) : null
                         }
+                        keyboardShouldPersistTaps="handled"
                     />
                 </View>
             ) : (
@@ -339,6 +369,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
         color: '#999',
+    },
+    countText: {
+        fontSize: 13,
+        color: '#999',
+        marginBottom: 8,
+        paddingHorizontal: 2,
     },
     selectedRestaurant: {
         flexDirection: 'row',
