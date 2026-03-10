@@ -3,14 +3,16 @@ import { Image } from 'expo-image';
 import { usePathname, useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 interface TabBarProps {
-    currentTab?: string; // Optional: which tab should be highlighted (if any)
+    currentTab?: string;
 }
 
 export function TabBar({ currentTab }: TabBarProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const unreadCount = useUnreadMessages();
 
     const tabs = [
         { name: 'explorer', label: 'Explorer', icon: require('@/assets/icons/explorer.svg'), route: '/(tabs)/explorer' },
@@ -20,14 +22,11 @@ export function TabBar({ currentTab }: TabBarProps) {
         { name: 'profile', label: 'Profil', icon: require('@/assets/icons/profil.svg'), route: '/(tabs)/profile' },
     ];
 
-    // Function to check if a tab is active
     const isTabActive = (tab: any) => {
         if (currentTab) return currentTab === tab.name;
-
         const routeName = tab.route.replace('/(tabs)', '');
         if (pathname === '/explorer' && routeName.includes('explorer')) return true;
         if (pathname === '/' && routeName.includes('explorer')) return true;
-
         return pathname.includes(routeName) && routeName !== '/';
     };
 
@@ -36,6 +35,7 @@ export function TabBar({ currentTab }: TabBarProps) {
             {tabs.map((tab) => {
                 const isActive = isTabActive(tab);
                 const color = isActive ? Colors.light.primary : '#000000';
+                const isMessage = tab.name === 'message';
 
                 return (
                     <Pressable
@@ -43,15 +43,23 @@ export function TabBar({ currentTab }: TabBarProps) {
                         style={styles.tab}
                         onPress={() => router.push(tab.route as any)}
                     >
-                        <Image
-                            source={tab.icon}
-                            style={{
-                                width: tab.size || 20,
-                                height: tab.size || 20,
-                            }}
-                            contentFit="contain"
-                            tintColor={color}
-                        />
+                        {/* Icône avec badge pour l'onglet Message */}
+                        <View style={styles.iconWrapper}>
+                            <Image
+                                source={tab.icon}
+                                style={{ width: tab.size || 20, height: tab.size || 20 }}
+                                contentFit="contain"
+                                tintColor={color}
+                            />
+                            {/* Badge non-lu — visible uniquement sur Message */}
+                            {isMessage && unreadCount > 0 && (
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>
+                                        {unreadCount > 99 ? '99+' : unreadCount}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                         <Text style={[styles.label, { color }]}>{tab.label}</Text>
                     </Pressable>
                 );
@@ -79,9 +87,30 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         gap: 5,
     },
+    iconWrapper: {
+        position: 'relative',
+    },
     label: {
         fontSize: 12,
         fontFamily: Fonts.medium,
         marginTop: 5,
+    },
+    badge: {
+        position: 'absolute',
+        top: -6,
+        right: -8,
+        minWidth: 18,
+        height: 18,
+        borderRadius: 9,
+        backgroundColor: '#E36B39',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 3,
+    },
+    badgeText: {
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: '700',
+        lineHeight: 12,
     },
 });

@@ -10,6 +10,17 @@ export function useMessages(conversationId: string) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // ── Marquer les messages reçus comme lus ─────────────────────────────────
+    const markMessagesAsRead = async () => {
+        if (!user || !conversationId) return;
+        await supabase
+            .from('messages')
+            .update({ is_read: true })
+            .eq('conversation_id', conversationId)
+            .eq('is_read', false)
+            .neq('sender_id', user.id);
+    };
+
     const fetchMessages = async () => {
         const { data, error } = await supabase
             .from('messages')
@@ -17,19 +28,23 @@ export function useMessages(conversationId: string) {
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: false });
 
-        if (error) console.error('Error fetching messages:', error);
-        else setMessages(data || []);
+        if (error) {
+            console.error('Error fetching messages:', error);
+        } else {
+            setMessages(data || []);
+        }
         setLoading(false);
+
+        // Marquer comme lus après chargement
+        await markMessagesAsRead();
     };
 
     const sendMessage = async (text: string) => {
         if (!user || !text.trim()) return;
 
         try {
-            // 1. Envoyer le message
             const { error: msgError } = await supabase
                 .from('messages')
-                // @ts-ignore
                 .insert({
                     conversation_id: conversationId,
                     sender_id: user.id,
@@ -38,10 +53,9 @@ export function useMessages(conversationId: string) {
 
             if (msgError) throw msgError;
 
-            // 2. Mettre à jour la conversation
             const { error: convError } = await supabase
                 .from('conversations')
-                // @ts-ignore
+                // @ts-ignore — last_message_* pas dans les types conversations
                 .update({
                     last_message_text: text.trim(),
                     last_message_at: new Date().toISOString()
@@ -59,10 +73,8 @@ export function useMessages(conversationId: string) {
     useEffect(() => {
         if (!conversationId) return;
 
-        // Charger les messages initiaux
         fetchMessages();
 
-        // Souscription temps réel
         const channel = supabase
             .channel(`conversation:${conversationId}`)
             .on(
@@ -73,9 +85,17 @@ export function useMessages(conversationId: string) {
                     table: 'messages',
                     filter: `conversation_id=eq.${conversationId}`
                 },
-                (payload) => {
+                async (payload) => {
                     const newMessage = payload.new as Message;
                     setMessages((current) => [newMessage, ...current]);
+
+                    // Marquer immédiatement comme lu si c'est un message reçu
+                    if (newMessage.sender_id !== user?.id) {
+                        await supabase
+                            .from('messages')
+                            .update({ is_read: true })
+                            .eq('id', newMessage.id);
+                    }
                 }
             )
             .subscribe();
@@ -83,7 +103,8 @@ export function useMessages(conversationId: string) {
         return () => {
             supabase.removeChannel(channel);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [conversationId]);
 
-    return { messages, loading, sendMessage };
+    return { messages, loading, sendMessage, markMessagesAsRead };
 }

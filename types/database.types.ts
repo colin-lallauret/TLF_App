@@ -98,6 +98,22 @@ export interface Database {
                     is_read: boolean;
                     created_at: string;
                 };
+                Insert: {
+                    id?: string;
+                    conversation_id?: string | null;
+                    sender_id?: string | null;
+                    text: string;
+                    is_read?: boolean;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    conversation_id?: string | null;
+                    sender_id?: string | null;
+                    text?: string;
+                    is_read?: boolean;
+                    created_at?: string;
+                };
             };
             favorite_restaurants: {
                 Row: {
