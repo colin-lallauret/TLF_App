@@ -2,23 +2,52 @@ import { BackButton } from '@/components/BackButton';
 import { Colors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { ConversationWithParticipant, useConversations } from '@/hooks/useConversations';
+import { supabase } from '@/lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MessageScreen() {
-    const { user, profile } = useAuth(); // Récupérer le profil aussi
+    const { user, profile } = useAuth();
     const router = useRouter();
     const { conversations, loading, refetch } = useConversations();
+    const [showOverlay, setShowOverlay] = useState(false);
+    const checkedRef = useRef(false);
 
-    const isMember = profile?.subscription_end_date
-        ? new Date(profile.subscription_end_date) > new Date()
-        : false;
+    // Calcul initial du statut membre
+    const computeIsMember = (sub_end: string | null) =>
+        sub_end ? new Date(sub_end) > new Date() : false;
+
+    const [isMember, setIsMember] = useState(() => computeIsMember(profile?.subscription_end_date ?? null));
+
+    // Re-vérifie le statut membre à chaque focus (retour depuis /subscription)
+    useFocusEffect(
+        useCallback(() => {
+            const checkMembership = async () => {
+                if (!user) return;
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('subscription_end_date')
+                    .eq('id', user.id)
+                    .single();
+                const member = computeIsMember((data as any)?.subscription_end_date ?? null);
+                setIsMember(member);
+                // Afficher l'overlay uniquement si non-membre et premier check
+                if (!member && !checkedRef.current) {
+                    setShowOverlay(true);
+                }
+                if (member) setShowOverlay(false);
+                checkedRef.current = true;
+            };
+            checkMembership();
+        }, [user])
+    );
 
     const handleSubscribe = () => {
-        router.push('/(tabs)/profile');
+        router.push('/subscription' as any);
     };
 
     const formatDate = (dateString: string) => {
@@ -170,9 +199,13 @@ export default function MessageScreen() {
             <BackButton style={styles.fixedBackButton} />
 
             {/* Overlay pour non-membres */}
-            {!isMember && (
+            {showOverlay && (
                 <View style={styles.overlay}>
                     <View style={styles.alertBox}>
+                        {/* Croix fermeture */}
+                        <TouchableOpacity style={styles.closeButton} onPress={() => setShowOverlay(false)}>
+                            <Ionicons name="close" size={20} color="#999" />
+                        </TouchableOpacity>
                         <Text style={styles.alertTitle}>Messagerie privée</Text>
                         <Text style={styles.alertMessage}>
                             L'échange avec les contributeurs est réservé aux membres.
@@ -398,5 +431,12 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        padding: 4,
+        zIndex: 1,
     },
 });

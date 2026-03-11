@@ -1,10 +1,11 @@
 import { BackButton } from '@/components/BackButton';
 import { Colors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { Stack, useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const MEAL_OPTIONS = [
@@ -20,12 +21,35 @@ export default function CreateTripScreen() {
     const [selectedMeals, setSelectedMeals] = useState<string[]>([]);
     const [tripName, setTripName] = useState('');
 
-    const isMember = profile?.subscription_end_date
+    const isMemberFromProfile = profile?.subscription_end_date
         ? new Date(profile.subscription_end_date) > new Date()
         : false;
 
+    const [isMember, setIsMember] = useState(isMemberFromProfile);
+    const [showOverlay, setShowOverlay] = useState(!isMemberFromProfile);
+    const checkedRef = useRef(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            const checkMembership = async () => {
+                if (!profile) return;
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('subscription_end_date')
+                    .eq('id', profile.id)
+                    .single();
+                const sub = (data as any)?.subscription_end_date;
+                const member = sub ? new Date(sub) > new Date() : false;
+                setIsMember(member);
+                if (member) setShowOverlay(false);
+                checkedRef.current = true;
+            };
+            checkMembership();
+        }, [profile?.id])
+    );
+
     const handleSubscribe = () => {
-        router.push('/(tabs)/profile');
+        router.push('/subscription' as any);
     };
 
     const toggleMeal = (id: string) => {
@@ -124,9 +148,12 @@ export default function CreateTripScreen() {
             </View>
 
             {/* Overlay pour non-membres */}
-            {!isMember && (
+            {showOverlay && (
                 <View style={styles.overlay}>
                     <View style={styles.alertBox}>
+                        <TouchableOpacity style={styles.closeButton} onPress={() => setShowOverlay(false)}>
+                            <Ionicons name="close" size={20} color="#999" />
+                        </TouchableOpacity>
                         <Text style={styles.alertTitle}>Créer un parcours</Text>
                         <Text style={styles.alertMessage}>
                             La création de parcours est réservée aux membres.
@@ -199,6 +226,13 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 16,
         fontFamily: Fonts.bold,
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        padding: 4,
+        zIndex: 1,
     },
     header: {
         paddingTop: 60,

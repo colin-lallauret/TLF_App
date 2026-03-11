@@ -111,8 +111,8 @@ export function useAuth() {
         if (!user) return { error: new Error('No user logged in') };
 
         try {
-            const { data, error } = await supabase
-                .from('profiles')
+            const table = supabase.from('profiles') as any;
+            const { data, error } = await table
                 .update(updates)
                 .eq('id', user.id)
                 .select()
@@ -135,5 +135,6 @@ export function useAuth() {
         signUp,
         signOut,
         updateProfile,
+        refreshProfile: () => user ? loadProfile(user.id) : Promise.resolve(),
     };
 }

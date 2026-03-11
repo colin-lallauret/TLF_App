@@ -6,8 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,12 +21,36 @@ export default function ConversationScreen() {
     const [sending, setSending] = useState(false);
     const [otherParticipant, setOtherParticipant] = useState<any>(null);
 
-    const isMember = profile?.subscription_end_date
+    const isMemberFromProfile = profile?.subscription_end_date
         ? new Date(profile.subscription_end_date) > new Date()
         : false;
 
+    const [isMember, setIsMember] = useState(isMemberFromProfile);
+    const [showOverlay, setShowOverlay] = useState(!isMemberFromProfile);
+    const checkedRef = useRef(false);
+
+    // Re-vérifie le statut membre à chaque focus (retour depuis /subscription)
+    useFocusEffect(
+        useCallback(() => {
+            const checkMembership = async () => {
+                if (!user) return;
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('subscription_end_date')
+                    .eq('id', user.id)
+                    .single();
+                const sub = (data as any)?.subscription_end_date;
+                const member = sub ? new Date(sub) > new Date() : false;
+                setIsMember(member);
+                if (member) setShowOverlay(false);
+                checkedRef.current = true;
+            };
+            checkMembership();
+        }, [user])
+    );
+
     const handleSubscribe = () => {
-        router.push('/(tabs)/profile');
+        router.push('/subscription' as any);
     };
 
     // Fetch conversation details to get other participant info
@@ -196,9 +220,13 @@ export default function ConversationScreen() {
             </KeyboardAvoidingView>
 
             {/* Overlay pour non-membres (uniquement après chargement auth) */}
-            {!authLoading && !isMember && (
+            {!authLoading && showOverlay && (
                 <View style={styles.overlay}>
                     <View style={styles.alertBox}>
+                        {/* Croix fermeture */}
+                        <TouchableOpacity style={styles.closeButton} onPress={() => setShowOverlay(false)}>
+                            <Ionicons name="close" size={20} color="#999" />
+                        </TouchableOpacity>
                         <Text style={styles.alertTitle}>Messagerie privée</Text>
                         <Text style={styles.alertMessage}>
                             L'échange avec les contributeurs est réservé aux membres.
@@ -400,5 +428,12 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    closeButton: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        padding: 4,
+        zIndex: 1,
     },
 });
