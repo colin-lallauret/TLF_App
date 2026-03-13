@@ -1,4 +1,6 @@
 {
   "buildCommand": "expo export",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "framework": null
 }
